@@ -1,24 +1,18 @@
-from urllib import request
+
 from rest_framework.views import APIView
-from rest_framework import permissions, status
-from rest_framework.response import Response
+from rest_framework import permissions
+from utils.responses import success_response, not_found
 from .models import Shipping
 from .seriallizers import ShippingSerializer
 
 # Create your views here.
 class GetShippingView(APIView):
 	permission_clases = (permissions.AllowAny, )
+	_SHIPPING = Shipping.objects.all()
 
-	def get(self, request, format=None):
-		_SHIPPING = Shipping.objects
-		if _SHIPPING.all().exists():
-			shipping_options = _SHIPPING.order_by('price').all()
+	def get(self, format=None):
+		if self._SHIPPING.exists():
+			shipping_options = self._SHIPPING.order_by('price').all()
 			shipping_options = ShippingSerializer(shipping_options, many=True)
-			return Response(
-				{'shipping_options': shipping_options.data},
-				status = status.HTTP_200_OK
-			)
-		return Response(
-				{'error': 'no shippings options available'},
-				status = status.HTTP_404_NOT_FOUND
-			)
+			return success_response({'shipping_options': shipping_options.data})
+		return not_found({'error': 'no shippings options available'})

@@ -1,12 +1,11 @@
 from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView
-from rest_framework.response import Response
-from rest_framework import status
 from django.shortcuts import get_object_or_404
 from django.forms.models import model_to_dict
 from .models import Order, OrderItem
 from accounts.models import UserAccount
 from accounts.serializers import UserModelSerializer
+from utils.responses import *
 
 
 # class ListOrderView2(ListAPIView):
@@ -35,8 +34,8 @@ from accounts.serializers import UserModelSerializer
 
 class ListOrderView(APIView):
 	def get(self, request, format=None):
-		user = self.request.user
-		_ORDERS = Order.objects
+		user = request.user
+		_ORDERS = Order.objects.all()
 		try:
 			orders = _ORDERS.order_by('-date_issued').filter(user = user)
 			result = [
@@ -48,23 +47,18 @@ class ListOrderView(APIView):
 					'date_issued': order.date_issued
 				} for order in orders
 			]
-			return Response(
-				{'orders': result}, status = status.HTTP_200_OK
-			)
-		except:
-			return Response(
-				{'error': 'something went wrong when retrieving orders'},
-				status= status.HTTP_500_INTERNAL_SERVER_ERROR
-			)
+			return success_response({'orders': result})
+		except Exception:
+			return server_error({'error': 'something went wrong when retrieving orders'})
 
 
 class OrderDetailView(APIView):
 	def get(self, request, transactionID, format=None):
-		user = self.request.user
-		_ORDER = Order.objects
+		user = request.user
+		_ORDER = Order.objects.all()
 
 		try:
-			order = get_object_or_404(Order, user = user, transaction_id = transactionID)
+			order = get_object_or_404(_ORDER, user = user, transaction_id = transactionID)
 			if order:
 				result = {
 					'status': order.status,
@@ -84,20 +78,14 @@ class OrderDetailView(APIView):
 					'date_issued': order.date_issued
 				}
 				order_items = OrderItem.objects.order_by('-date_issued').filter(order = order)
-				result['order_items'] = [
-					{
-						'name': item.name,
-						'price': item.price,
-						'count': item.count,
-					} for item in order_items
-				]
-				return Response(
-					{'order': result},
-					status= status.HTTP_200_OK
-				)
-		except:
-			return Response(
-				{'error': 'something went wrong when retrieving orders'},
-				status= status.HTTP_500_INTERNAL_SERVER_ERROR
+				result['order_items'] = [{
+					'name': item.name,
+					'price': item.price,
+					'count': item.count
+				} for item in order_items ]
+				return success_response({'order': result})
+		except Exception:
+			return server_error(
+				{'error': 'something went wrong when retrieving orders'}
 			)
 

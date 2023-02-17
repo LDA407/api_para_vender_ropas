@@ -1,9 +1,7 @@
 from rest_framework.views import APIView
-from rest_framework import status
 from .models import FixedPriceCoupon, PorcentageCoupon
 from .serializers import FixedPriceCouponSerializer, PorcentageCouponSerializer
-from rest_framework.response import Response
-
+from utils.responses import *
 # Create your views here.
 
 class CheckCouponView(APIView):
@@ -13,18 +11,13 @@ class CheckCouponView(APIView):
             if FixedPriceCoupon.objects.filter(name = coupon_name).exists():
                 coupon = FixedPriceCoupon.objects.get(name = coupon_name)
                 coupon = FixedPriceCouponSerializer(coupon)
-                return Response(
-                    { 'coupon', coupon.data }, status=status.HTTP_200_OK
-                )
+                return success_response({ 'coupon', coupon.data })
+
             if PorcentageCoupon.objects.filter(name = coupon_name).exists():
                 coupon = PorcentageCoupon.objects.get(name = coupon_name)
                 coupon = PorcentageCouponSerializer(coupon)
-                return Response(
-                    { 'coupon', coupon.data }, status=status.HTTP_200_OK
-                )
-        except:
-            return Response(
-                {'error' : 'Something went wrong when checking coupon'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+                return success_response({ 'coupon', coupon.data })
+
+        except Exception as error:
+            return server_error({'error' : 'Something went wrong when checking coupon'})
 
