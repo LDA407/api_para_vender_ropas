@@ -47,7 +47,7 @@ ALLOWED_HOSTS = [
 
 PROJECT_APPS = ['accounts',]
 # ECOMMERCE_APPS = ['payment','cart','product', ]
-ECOMMERCE_APPS = ['cart','product','orders', 'shipping']
+ECOMMERCE_APPS = ['cart','product','orders', 'shipping', 'coupons']
 
 THIRD_PARTY_APPS=[
     'corsheaders',
@@ -184,9 +184,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
-
-STATIC_ROOT = os.path.join(BASE_DIR, 'frontend/build/static')
-# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+# usar esto para 
+# STATIC_ROOT = os.path.join(BASE_DIR, 'frontend/build/')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 STATIC_URL = '/static/'
 
@@ -198,7 +198,7 @@ MEDIA_URL = '/media/'
 # )
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
+    os.path.join(BASE_DIR, 'static/'),
     # os.path.join(BASE_DIR, 'dist'),
 ]
 

@@ -24,7 +24,6 @@ class ListCategoriesView(APIView):
                         if sub_cat.parent and sub_cat.parent.id == cat.id
                     ]
                     data.append({'id': cat.id, 'name': cat.name, 'sub_categories': sub_categories})
-
             return success_response({'categories': data})
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -121,8 +120,8 @@ class ListRelatedView(APIView):
     def get(self, request, productId, format=None):
         try:
             product = Product.objects.get(id=productId)
-        except Product.DoesNotExist:
-            return not_found({'Error': 'Product not found'})
+        except Product.DoesNotExist as error:
+            return not_found({'Error': f'{str(error)}'})
 
         category = product.category
         related_products = Product.objects.filter(category=category).exclude(id=productId).order_by('-sold')
@@ -172,14 +171,14 @@ class FilterBySearchView(APIView):
                     products_results = self._PRODUCTS.filter(category=category)
                 else:
                     categories = self._CATEGORIES.filter(parent=category)
-                    filtered_categories = tuple([category] + [c for c in categories])
+                    filtered_categories = tuple([category] + list(categories))
                     # logger.debug(filtered_categories)
                     products_results = self._PRODUCTS.filter(category__in=filtered_categories)
-
-        val1, val2 = price_range.split('-')
-        if price_range == 'More then 80':
+        
+        if price_range == "More then 80":
             products_results = products_results.filter(price__gte=80)
         else:
+            val1, val2 = price_range.split("-")
             products_results = products_results.filter(price__range=[val1, val2])
 
         products_results = products_results.order_by(sortBy, '-id')

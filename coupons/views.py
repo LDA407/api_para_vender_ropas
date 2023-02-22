@@ -19,5 +19,5 @@ class CheckCouponView(APIView):
                 return success_response({ 'coupon', coupon.data })
 
         except Exception as error:
-            return server_error({'error' : 'Something went wrong when checking coupon'})
+            return server_error({'error' : f'Something went wrong when checking coupon: {str(error)}'})
 

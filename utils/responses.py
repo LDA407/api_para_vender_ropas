@@ -30,3 +30,6 @@ def expectation_failed(data):
 
 def server_error(data):
     return Response(data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+def not_suported_response(data):
+    return Response(data, status=status.HTTP_505_HTTP_VERSION_NOT_SUPPORTED)

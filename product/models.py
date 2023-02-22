@@ -12,11 +12,16 @@ from datetime import datetime
 #     return _picture_name
 
 
+class Tag(models.Model):
+    class Meta:
+        db_table = "tag"
+    name = models.CharField(max_length=250, blank=False, null=False, unique=True)
+
+
 class Category(models.Model):
     class Meta:
-        verbose_name = 'Category'
+        db_table = "category"
         verbose_name_plural = 'Categories'
-    
     parent = models.ForeignKey('self', related_name='children', on_delete=models.CASCADE, blank=True, null=True)
     name = models.CharField(max_length=255, unique=True)
 
@@ -24,22 +29,80 @@ class Category(models.Model):
         return self.name
 
 
+class Tax(models.Model):
+    class Meta:
+        db_table = "tax"
+        verbose_name_plural = 'Taxes'
+    name = models.CharField(max_length=100, blank=False, null=False)
+    percent = models.DecimalField(max_digits = 4, decimal_places = 2) 
+
+
+class Discount(models.Model):
+    class Meta:
+        db_table = "discount"
+        verbose_name_plural = 'Discounts'
+    name = models.CharField(max_length=100, blank=False, null=False)
+    amount = models.DecimalField(max_digits = 4, decimal_places = 2) 
+
+
+class GaleryProduct(models.Model):
+    class Meta:
+        db_table = "galery_product"
+        verbose_name_plural = 'GaleriesProducts'
+    image = models.ImageField(upload_to="media")
+
+
+class ColorVariation(models.Model):
+    class Meta:
+        db_table = "color_variation"
+        verbose_name_plural = 'ColorsVariations'
+    name = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.name
+
+
+class SizeVariation(models.Model):
+    class Meta:
+        db_table = "size_variation"
+        verbose_name_plural = 'SizesVariations'
+    name = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.name
+
+
 class Product(models.Model):
+    class Meta:
+        db_table = "product"
     name = models.CharField(max_length=250)
-    photo = models.ImageField(upload_to='media')
     description = models.TextField()
     price = models.DecimalField(max_digits=6, decimal_places=2)
-    price_with_discount = models.DecimalField(max_digits=6, decimal_places=2)
-    category = models.ForeignKey('Category', on_delete=models.CASCADE)
-    quantity = models.IntegerField(default= 0)
-    sold = models.IntegerField(default= 0)
+    discount = models.ForeignKey(Discount, blank=True, null=True, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    quantity = models.IntegerField(default=0)
+    sold = models.IntegerField(default=0)
+    galery = models.ManyToManyField(GaleryProduct, blank=True, null=True)
+    available_colours = models.ManyToManyField(ColorVariation, blank=True, null=True)
+    available_sizes = models.ManyToManyField(SizeVariation, blank=True, null=True)
     date_created = models.DateTimeField(default=datetime.now)
 
-    def get_image(self):
-        if self.photo:
-            return 'http://127.0.0.1:8000/static' + self.photo.url
-        return ""
-    
+    def get_discounted_price(self):
+        discounts = self.discount_set.all()
+        if discounts:
+            discount = max(discounts, key=lambda d: d.amount)
+            return self.price - discount.amount
+        return self.price
+
+    def mark_as_sold(self):
+        self.sold += 1
+        self.save()
+
+    # def get_image(self, request):
+    #     if self.photo:
+    #         return str(request.build_absolute_uri(self.photo.url))
+    #     return ""
+
     def __str__(self) -> str:
         return self.name
 
