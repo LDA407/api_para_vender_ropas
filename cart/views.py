@@ -34,29 +34,28 @@ class AddItemView(APIView):
         user = request.user
         data = request.data
         count = 1
-        print(data)
         
         try: product_id = int(data.get('product_id'))
         except ValueError:
             return bad_request({'error': 'product id must be an integer'})
         try:
             cart = Cart.objects.get(user = user)
-            product = get_object_or_404( Product, id = int(product_id) )
+            product = Product.objects.get(id = product_id )
 
-            if CartItem.objects.filter(cart = cart, product = product).exists():
+            if cart._cartitems_exists(cart, product):
                 return conflict_response({'error':'the product already in cart'})
 
             if int(product.quantity) > 0:
                 CartItem.objects.create(
-                    product = product,
-                    cart = cart,
-                    count = count
+                    product = product, cart = cart, count = count
                 )
-                # si el producto ya existe le suma 1
-                if CartItem.objects.filter(cart = cart, product = product).exists():
+
+                # si el producto ya existe le suma 1 al total de items de carro
+                if cart._cartitems_exists(cart, product):
                     Cart.objects.filter(user = user).update(
-                        total_items = int(cart.total_items) + 1
+                        total_items =+ 1
                     )
+
                     cart_items = CartItem.objects.order_by(
                         'product'
                     ).filter(cart = cart)
@@ -70,8 +69,9 @@ class AddItemView(APIView):
                             'count': item.count,
                             'product': product.data,
                         })
-                return created_response({'cart': result})
-            return success_response({'error': 'no enough of this item in stock'})
+                    
+                    return created_response({'cart': result})
+                return success_response({'error': 'no enough of this item in stock'})
         except Exception as error:
             return server_error({'error': f'something went wrong adding intem to cart: {str(error)}'})
 
@@ -82,20 +82,22 @@ class GetTotalView(APIView):
 
         try:
             cart = Cart.objects.get(user=user)
-            # cart_items = CartItem.objects.filter(cart=cart)
+
+            if cart._cartitems_exists(cart):
+                return not_found({'error':'the cart is empty'})
+            
             costo_total = cart.get_total_amount()
             # total_compare_amount = cart.get_total_compare_amount()
-
             return success_response({
                 'costo_total': costo_total,
                 # 'total_con_descuentos': total_compare_amount
             })
 
         except Cart.DoesNotExist:
-            return not_found({'error': 'User cart not found'})
+            return not_found({'error':'the cart does not exist'})
 
         except Exception as error:
-            return server_error({'error': f'Something went wrong: {str(error)}'})
+            return server_error({'error': f'something went wrong: {str(error)}'})
 
 
 class GetItemTotalView(APIView):
@@ -124,12 +126,16 @@ class UpdateItemView(APIView):
         try:
             count = int(data.get('count'))
         except ValueError:
-            return bad_request({'error':'count id must be an integer'})
+            return bad_request({'error':'count must be an integer'})
         
         try:
-            product = get_object_or_404( Product, id = product_id )
+            if not Product.objects.filter(id=product_id).exists():
+                return not_found({'error': f'The product with id {product_id} does not exist'})
+
+            product = Product.objects.get( id = product_id )
             cart =  Cart.objects.get( user = user )
-            if not CartItem.objects.filter(cart = cart, product = product).exists():
+
+            if not cart._cartitems_exists(cart, product):
                 return not_found({'error':'El producto no esta en tu carrito'})
 
             if count <= product.quantity:
@@ -165,15 +171,22 @@ class RemoveItemView(APIView):
             return bad_request({'error': 'El id del producto debe ser un entero'})
 
         try:
-            product = get_object_or_404(Product, id=product_id)
+            if not Product.objects.filter(id=product_id).exists():
+                return not_found({'error': f'The product with id {product_id} does not exist'})
+
             cart = Cart.objects.get(user=user)
-            if not CartItem.objects.filter(cart=cart, product=product).exists():
+            product = Product.objects.get(id=product_id)
+
+            if not cart._cartitems_exists(cart, product):
                 return not_found({'error': 'El producto no está en tu carrito'})
+
             CartItem.objects.filter(cart=cart, product=product).delete()
 
-            # Se actualiza el conteo de elementos y se devuelve la lista actualizada del carrito
-            CartItem.objects.filter(cart=cart, product=product).update(total_items=int(cart.count) - 1)
+            if not cart._cartitems_exists(cart, product):
+                Cart.objects.filter(user=user).update( total_items =- 1 )
+
             cart_items = CartItem.objects.order_by('product').filter(cart=cart)
+            
             result = []
             for item in cart_items:
                 product = Product.objects.get(id=item.product.id)
@@ -185,19 +198,16 @@ class RemoveItemView(APIView):
                 })
             return success_response({'cart': result})
         except Exception as error:
-            return server_error({'error': 'Algo salió mal al eliminar el elemento del carrito'})
+            return server_error({'error': f'Algo salió mal al eliminar el elemento del carrito: {str(error)}'})
 
 
 class EmptyCartView(APIView):
     def delete(self, request, format=None):
         user = request.user
-        # data = self.request.data
-
         try:
             cart = Cart.objects.get(user = user )
-            cart_item = get_list_or_404(CartItem, cart = cart)
-            cart_item.delete()
-            Cart.objects.get( user = user ).update( total_items = 0 )
+            CartItem.objects.filter( cart = cart ).delete()
+            Cart.objects.filter( user = user ).update( total_items = 0 )
             return success_response({'success':'cart empty successfully'})
         except Exception as error:
             return server_error({'error': f'something went wrong adding intem to cart: {str(error)}'})
@@ -217,14 +227,11 @@ class SynchCartView(APIView):
                 except ValueError:
                     return bad_request({'error':'product id must be an integer'})
                 
-                cart = get_object_or_404(CartItem, cart = cart )
+                cart_items = get_object_or_404(CartItem, cart = cart )
                 product = Product.objects.get(id = product_id)
                 quantity = product.quantity
 
-                if CartItem.objects.filter(
-                    cart = cart,
-                    product = product
-                ).exists():
+                if CartItem.item_exists(cart = cart, product = product ):
                     item = CartItem.objects.get(
                         cart = cart,
                         product = product
@@ -247,9 +254,10 @@ class SynchCartView(APIView):
                         cart_item_count = 1
                     
                     if cart_item_count <= quantity:
-                        CartItem.object.create(product = product, cart = cart, count = cart_item_count)
-                        if CartItem.object.filter( product = product, cart = cart ).exists():
+                        CartItem.object.create(cart = cart, product = product, count = cart_item_count)
+                        if CartItem.item_exists(cart = cart, product = product):
                             Cart.object.filter(cart = cart, product = product).update(total_items = int(cart_item['count']) + 1)
+                
                 return created_response({'success': 'cart Synchronized'})
         except:
             return server_error({'error': 'something went wrong adding intem to cart'})

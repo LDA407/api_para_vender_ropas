@@ -6,9 +6,11 @@ from django.shortcuts import get_object_or_404, get_list_or_404
 from django.conf import settings
 # from django.db.models import Q
 from cart.models import Cart, CartItem
+from coupons.models import FixedPriceCoupon, PorcentageCoupon
 from orders.models import Order, OrderItem
 from product.models import Product
 from shipping.models import Shipping
+
 
 from django.views.decorators import csrf, http
 from django.utils.decorators import method_decorator
@@ -21,16 +23,21 @@ from utils.responses import *
 
 gateway = braintree.BraintreeGateway(
     braintree.Configuration(
-        environment = settings.BT_ENVIRONMENT,
-        merchant_id = settings.BT_MERCHANT,
-        public_key = settings.BT_PUBLIC_KEY,
-        private_key = settings.BT_PRIVATE_KEY
+        braintree.Environment.Sandbox,
+        merchant_id=settings.BT_MERCHANT_ID,
+        public_key=settings.BT_PUBLIC_KEY,
+        private_key=settings.BT_PRIVATE_KEY
     )
 )
+
 
 class GenerateTokenView(APIView):
     def get(self, format= None):
         try:
+            # pass client_token to your front-end
+            # client_token = gateway.client_token.generate({
+            #     "customer_id": a_customer_id
+            # })
             token = gateway.client_token.generate()
             return success_response({ 'braintree_token': token })
         except Exception as error:
@@ -57,6 +64,7 @@ class GetPaymentTotalView(APIView):
         user = self.request.user
         tax = 0.24
         shipping_id = str(request.query_params.get('shipping_id'))
+        coupon_name = request.query_params.get('coupon_name')
 
         try:
             cart = Cart.objects.get(user=user)
@@ -68,14 +76,32 @@ class GetPaymentTotalView(APIView):
                 if not_available:
                     return not_found(f"Error! Not enough stock for product: {str(not_available)}")
 
-            # total_amount = cart.get_total_amount()
-            # total_compare_amount = cart.get_total_compare_amount()
+            total_amount = cart.get_total_amount()
+            total_compare_amount = cart.get_total_compare_amount()
 
-            total_compare_amount = round(cart.get_total_compare_amount(), 2)
-            original_price = round(cart.get_total_amount(), 2)
-            estimated_tax = round(original_price * tax, 2)
+            original_price = total_amount
+            # estimated_tax = round(total_amount * tax, 2)
             total_amount += (total_amount * tax)
 
+            # Coupon
+            # =====
+            if coupon_name != "":
+                if FixedPriceCoupon.objects.filter(name__iexact = coupon_name).exists():
+                    fixed_price_coupon = FixedPriceCoupon.objects.get(name=coupon_name)
+                    discount_amount = float(fixed_price_coupon.discount_amount)
+                    if discount_amount < total_amount:
+                        total_amount -= discount_amount
+                        total_after_coupon = total_amount
+                
+                elif PorcentageCoupon.objects.filter(name_iexact = coupon_name).exists():
+                    percentage_coupon = PorcentageCoupon.objects.get(name=coupon_name)
+                    discount_percentage = float(percentage_coupon)
+
+                    if discount_amount > 1 and discount_amount < 100:
+                        total_amount -= (total_amount * discount_amount / 100)
+                        total_after_coupon = total_amount
+            
+            total_after_coupon = round(total_after_coupon, 2)
             # Envío
             # =====
             shipping_cost = 0.0
@@ -89,9 +115,10 @@ class GetPaymentTotalView(APIView):
 
             return success_response({
                 'original_price'        : f'{original_price:.2f}',
+                'total_after_coupon'    : f'{total_after_coupon:.2f}',
                 'total_amount'          : f'{total_amount:.2f}',
                 'total_compare_amount'  : f'{total_compare_amount:.2f}',
-                'estimated_tax'         : f'{estimated_tax:.2f}',
+                # 'estimated_tax'         : f'{estimated_tax:.2f}',
                 'shipping_cost'         : f'{shipping_cost:.2f}',
             })
         
@@ -108,26 +135,28 @@ decorators = [http.require_http_methods(["POST"])]
 class ProcessPaymentView(APIView):
     permission_classes = (permissions.IsAuthenticated)
 
-    def dispatch(self, request, *args, **kwargs):
-        if 'HTTP_X_FORWARDED_PROTO' in self.request.META and self.request.META['HTTP_X_FORWARDED_PROTO'] == 'https':
-            self.request.is_secure = lambda: True
+    # def dispatch(self, request, *args, **kwargs):
+    #     if 'HTTP_X_FORWARDED_PROTO' in self.request.META and self.request.META['HTTP_X_FORWARDED_PROTO'] == 'https':
+    #         self.request.is_secure = lambda: True
 
-        if not self.request.is_secure():
-            return not_suported_response("Insecure request. Please upgrade to HTTPS")
+    #     if not self.request.is_secure():
+    #         return not_suported_response("Insecure request. Please upgrade to HTTPS")
 
-        if 'HTTP_AUTHORIZATION' not in self.request.META:
-            return unauthorized_response("Error! User not provided credentials")
+    #     if 'HTTP_AUTHORIZATION' not in self.request.META:
+    #         return unauthorized_response("Error! User not provided credentials")
 
-        return super().dispatch(request, *args, **kwargs)
+    #     return super().dispatch(request, *args, **kwargs)
 
     def post(self, request, format= None):
         _CARTS = Cart.objects.all()
         _PRODUCTS = Product.objects.all()
+        _CART_ITEMS = CartItem.objects.all()
         
         user			= request.user
         data			= request.data
         tax				= 0.24
         nonce			= data.get('nonce')
+        coupon_name	    = str(data.get('coupon_name'))
         shipping_id		= str(data.get('shipping_id'))
         full_name		= data.get('full_name')
         address_line_1	= data.get('address_line_1')
@@ -138,21 +167,32 @@ class ProcessPaymentView(APIView):
         country			= data.get('country')
         telephone		= data.get('telephone')
 
-        cart 			= Cart.objects.get(user = user)
-        cart_items 		= get_object_or_404(CartItem, cart = cart)
+        cart 			= _CARTS.filter(user = user)
+        cart_items      = _CART_ITEMS.filter(cart=cart).first()
 
         for cart_item in cart_items:
             not_available = cart_item.product_not_available()
             if not_available:
                 return not_found(f"Error! Not enough stock for product: {str(not_available)}")
-            total_amount = cart_item.raw_total_price()
-        # total_amount =  sum([[item.raw_total_price()] for item in cart_items])
         
-        # cupones
-        # =======
+        # Coupon
+        # =====
+        if coupon_name != "":
+            if FixedPriceCoupon.objects.filter(name__iexact = coupon_name).exists():
+                fixed_price_coupon = FixedPriceCoupon.objects.get(name=coupon_name)
+                discount_amount = float(fixed_price_coupon.discount_amount)
+                if discount_amount < total_amount:
+                    total_amount -= discount_amount
+            
+            elif PorcentageCoupon.objects.filter(name_iexact = coupon_name).exists():
+                percentage_coupon = PorcentageCoupon.objects.get(name=coupon_name)
+                discount_percentage = float(percentage_coupon)
+                if discount_amount > 1 and discount_amount < 100:
+                    total_amount -= (total_amount * discount_amount / 100)
+        
 
         total_amount += (total_amount * tax)
-        shipping 		= get_object_or_404(_PRODUCTS, id=int(shipping_id))
+        shipping 		= get_object_or_404(_PRODUCTS, id=shipping_id)
         shipping_name 	= shipping.name
         shipping_time 	= shipping.time_to_delivery
         shipping_price	= shipping.price
@@ -173,12 +213,12 @@ class ProcessPaymentView(APIView):
             return server_error(f"Error processing the transaction: {str(error)}")
         
         if new_transaction.is_success or new_transaction.transaction:
+            from django.db.models import F
             for cart_item in cart_items:
-                update_product = _PRODUCTS.get(id=cart_item.product.id)
                 # actualiza la cantidad de productos en stok
                 _PRODUCTS.filter(id=cart_item.product.id).update(
-                    quantity = (int(update_product.quantity) - int(cart_item.count)),
-                    sold = (int(update_product.sold) + int(cart_item.count))
+                    quantity = F('quantity') - cart_item.count,
+                    sold = F('sold') + cart_item.count
                 )
             try:
                 order = Order.objects.add(
@@ -201,13 +241,13 @@ class ProcessPaymentView(APIView):
                 return server_error(f"Error! The transaction succeded but failed to create the order: {str(error)}")
             
             for cart_item in cart_items:
-                product = self._PRODUCTS.get(id=cart_item.product.id)
+                product = _PRODUCTS[cart_item.product.id]
                 try:
                     OrderItem.objects.add(
                         product = product,
                         order = order,
                         name = product.name,
-                        price = cart_item.product.price,
+                        price = product.price,
                         count = cart_item.count
                     )
                 except Exception as error:
@@ -230,11 +270,12 @@ class ProcessPaymentView(APIView):
                 )
             except Exception as error:
                 return server_error(
-                    {f"Transaction succeded and order successfull, but failed to send mail {str(error)}")
+                    f"Transaction succeded and order successfull, but failed to send mail {str(error)}")
             
             try:
                 CartItem.objects.filter(cart = cart).delete()
-                self._CARTS.filter(user = user).update(total_items = 0)
+                cart_updated = _CARTS.filter(user = user).update(total_items = 0)
+                cart_updated.save()
             except Exception as error:
                 return server_error(
                     f"Transaction succeded and order successfull, but failed to eliminate {str(error)}"

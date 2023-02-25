@@ -17,8 +17,8 @@ urlpatterns = [
     path('api/cart/', include('cart.urls')),
     path('api/shipping/', include('shipping.urls')),
     path('api/orders/', include('orders.urls')),
-    # path('api/payment/', include('payment.urls')),
-
+    path('api/payment/', include('payment.urls')),
+    # path('api/profile/', include('user_profile.urls')),
 
     re_path(r'^.*', TemplateView.as_view(template_name="index.html"))
 ]

@@ -2,6 +2,7 @@ import os
 from django.db import models
 from django.conf import settings
 from datetime import datetime
+from django.urls import reverse
 
 # Create your models here.
 # def _directory_path(instance, filename):
@@ -10,6 +11,18 @@ from datetime import datetime
 #     if os.path.exists(full_path):
 #         os.remove(full_path)
 #     return _picture_name
+
+
+class ProductManager(models.Manager):
+    def _the_product_exists(self, product_id):
+        return self.filter(product_id=product_id).exists()
+
+    def search_query(self, search_query):
+        return self.filter(
+            models.Q(description__icontains=search_query) |
+            models.Q(name__icontains=search_query)
+        )
+
 
 
 class Tag(models.Model):
@@ -34,7 +47,7 @@ class Tax(models.Model):
         db_table = "tax"
         verbose_name_plural = 'Taxes'
     name = models.CharField(max_length=100, blank=False, null=False)
-    percent = models.DecimalField(max_digits = 4, decimal_places = 2) 
+    tax_porcentage = models.DecimalField(max_digits = 4, decimal_places = 2) 
 
 
 class Discount(models.Model):
@@ -87,6 +100,9 @@ class Product(models.Model):
     available_sizes = models.ManyToManyField(SizeVariation, blank=True, null=True)
     date_created = models.DateTimeField(default=datetime.now)
 
+    objects = models.Manager()
+    products = ProductManager()
+
     def get_discounted_price(self):
         discounts = self.discount_set.all()
         if discounts:
@@ -103,6 +119,49 @@ class Product(models.Model):
     #         return str(request.build_absolute_uri(self.photo.url))
     #     return ""
 
+    # def get_absolute_url(self):
+    #     return reverse('detail', kwargs={
+    #         'slug': self.slug
+    #     })
+
+    def get_like_url(self):
+        return reverse('like', kwargs={
+            'slug': self.slug
+        })
+
+    @property
+    def comments(self):
+        return self.comment_set.all()
+
+    @property
+    def comments_count(self):
+        return self.comment_set.all().count()
+
+    @property
+    def likes_count(self):
+        return self.like_set.all().count()
+
+
     def __str__(self) -> str:
         return self.name
 
+
+class Comment(models.Model):
+    # class Meta:
+        # db_table = "comment"
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(auto_now=True)
+    content = models.TextField()
+
+    def __str__(self):
+        return self.user.username
+
+
+class Like(models.Model ):
+    # class Meta:
+        # db_table = "like"
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    def __str__(self):
+        return self.user.username

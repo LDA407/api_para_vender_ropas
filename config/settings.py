@@ -1,6 +1,6 @@
 import os
 import environ
-from datetime import datetime, timedelta
+from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -19,12 +19,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # # Whether the session cookie should be secure (https:// only).
 # SESSION_COOKIE_SECURE = False
 
-
-
 env = environ.Env()
 environ.Env.read_env()
 
-ENVIROMENT = env
+BT_MERCHANT_ID = env('BT_MERCHANT_ID')
+BT_PUBLIC_KEY = env('BT_PUBLIC_KEY')
+BT_PRIVATE_KEY = env('BT_PRIVATE_KEY')
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
@@ -263,14 +263,6 @@ DJOSER = {
     },
 }
 
-
-"""
-BT_ENVIRONMENT = env('BT_ENVIRONMENT')
-BT_MERCHANT_ID = env('BT_MERCHANT_ID')
-BT_PUBLIC_KEY = env('BT_PUBLIC_KEY')
-BT_PRIVATE_KEY = env('BT_PRIVATE_KEY')
-
-"""
 AUTH_USER_MODEL="accounts.UserAccount"
 
 EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'

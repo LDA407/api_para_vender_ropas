@@ -11,6 +11,9 @@ class Cart(models.Model):
     total_items = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def _cartitems_exists(self, cart, product=None):
+        return self.cartitem_set.filter(cart = cart, product=product).exists()
+
     def get_total_amount(self):
         return self.cartitem_set.aggregate(
             total=models.Sum(F('product__price') * F('count'), output_field=DecimalField())
@@ -31,12 +34,8 @@ class CartItem(models.Model):
     count = models.IntegerField()
 
     def product_not_available(self):
-        if self.count > self.select_related("product").values("quantity"):
-            return self.select_related("product").values("name")
-
-    def raw_total_amount(self):
-        return float(self.select_related("product").values("price")) * float(self.count)
-
+        if self.count > self.product.quantity:
+            return self.product.name
 
     def __str__(self):
         return f"{self.count}x {self.product.name} in cart for {self.cart.user.full_name}"

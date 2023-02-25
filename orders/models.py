@@ -4,10 +4,10 @@ from shipping.models import Shipping
 from product.models import Product
 from datetime import datetime
 from django.contrib.auth import get_user_model
-from .countries import Countries 
-
+from utils.countries import Countries 
 
 User = get_user_model()
+
 
 class Order(models.Model):
 	class OrderStatus(models.TextChoices):
@@ -57,3 +57,4 @@ class OrderItem(models.Model):
 	price = models.DecimalField(max_digits = 5, decimal_places = 2)
 	count = models.IntegerField()
 	data_added = models.DateTimeField(auto_now_add=True)
+
