@@ -1,10 +1,7 @@
-
-
-
 import json, random
 from product.models import Product, Category
 from django.shortcuts import get_object_or_404
-filename ="C:\\Users\\usuario\\PythonProjects\\ecommers_react\\backend\\product\\product.json"
+filename ="C:\\Users\\LDA407\\PythonProjects\\ecommers_react\\backend\\utils\\product.json"
 
 
 with open(filename, 'r', encoding="utf8") as f: 

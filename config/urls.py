@@ -12,15 +12,16 @@ urlpatterns = [
     path('auth/', include('djoser.urls.jwt')),
     path('auth/', include('djoser.social.urls')),
     # apps
-    path('api/accounts/', include('accounts.urls')),
-    path('api/products/', include('product.urls')),
-    path('api/cart/', include('cart.urls')),
-    path('api/shipping/', include('shipping.urls')),
-    path('api/orders/', include('orders.urls')),
-    path('api/payment/', include('payment.urls')),
+    path('api/accounts/', include('apps.accounts.urls')),
+    path('api/products/', include('apps.product.urls')),
+    path('api/shopping_cart/', include('apps.shopping_cart.urls')),
+    path('api/shipping/', include('apps.shipping.urls')),
+    path('api/orders/', include('apps.orders.urls')),
+    path('api/payment/', include('apps.payment.urls')),
     # path('api/profile/', include('user_profile.urls')),
 
-    re_path(r'^.*', TemplateView.as_view(template_name="index.html"))
+    # re_path(r'^.*', TemplateView.as_view(template_name="index.html"))
 ]
 if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

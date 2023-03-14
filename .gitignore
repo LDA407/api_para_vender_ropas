@@ -10,9 +10,10 @@ local_settings.py
 db.sqlite3
 db.sqlite3-journal
 media
-*/migrations/*
+migrations/
 ngrok.exe
-
+static/
+static_root/
 workspace.code-workspace
 
 # If your build process includes running collectstatic, then you probably don't need or want to include staticfiles/

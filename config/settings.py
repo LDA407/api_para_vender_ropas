@@ -4,7 +4,8 @@ from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent
+print(BASE_DIR)
 
 
 # CURRENT_PATH = os.path.abspath(os.path.dirname(__file__).decode('utf-8')).replace('\\', '/')
@@ -31,12 +32,10 @@ BT_PRIVATE_KEY = env('BT_PRIVATE_KEY')
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = [
     "127.0.0.1",
-    # "localhost",
-    # "5e63-186-143-134-178.sa.ngrok.io"
 ]
 
 
@@ -45,9 +44,20 @@ ALLOWED_HOSTS = [
 #     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 # Application definition
 
-PROJECT_APPS = ['accounts',]
-# ECOMMERCE_APPS = ['payment','cart','product', ]
-ECOMMERCE_APPS = ['cart','product','orders', 'shipping', 'coupons']
+
+PROJECT_APPS = ['apps.accounts',]
+
+
+ECOMMERCE_APPS = [
+    'apps.shopping_cart',
+    'apps.product',
+    'apps.orders',
+    'apps.shipping',
+    'apps.coupons',
+    'apps.reviews',
+    'apps.wishlist'
+]
+
 
 THIRD_PARTY_APPS=[
     'corsheaders',
@@ -58,7 +68,9 @@ THIRD_PARTY_APPS=[
     'rest_framework_simplejwt.token_blacklist',
     'ckeditor',
     'ckeditor_uploader',
+    # 'import_export',
 ]
+
 
 INSTALLED_APPS = [
     'daphne',
@@ -70,13 +82,16 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 ] + PROJECT_APPS + ECOMMERCE_APPS + THIRD_PARTY_APPS
 
+
 CKEDITOR_CONFIGS = {
     'default': {
         'toolbar': 'full',
         'autoParagraph': False
     }
 }
+
 CKEDITOR_UPLOAD_PATH = "/media/"
+
 
 # WEBPACK_LOADER = {
 #     'DEFAULT': {
@@ -89,6 +104,7 @@ CKEDITOR_UPLOAD_PATH = "/media/"
 #         'LOADER_CLASS': 'webpack_loader.loader.WebpackLoader',
 #     }
 # }
+
 
 MIDDLEWARE = [
     'social_django.middleware.SocialAuthExceptionMiddleware',
@@ -109,7 +125,8 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS':[os.path.join(BASE_DIR, 'frontend/build')],
+        # 'DIRS':[os.path.join(BASE_DIR, 'frontend/build')],
+        'DIRS':[""],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -122,7 +139,8 @@ TEMPLATES = [
     },
 ]
 
-# WSGI_APPLICATION = 'config.wsgi.application'
+# IMPORT_EXPORT_USE_TRANSACTIONS = True
+
 ASGI_APPLICATION = 'config.asgi.application'
 # comando para ejecutar la app
 # daphne config.asgi:application
@@ -138,12 +156,14 @@ DATABASES = {
 }
 DATABASES["default"]["ATOMIC_REQUESTS"] = True
 
+
 CORS_ORIGIN_WHITELIST = [
     'http://localhost:3000',
     'http://localhost:8000',
     'http://127.0.0.1:8000',
     'http://127.0.0.1:3000',
 ]
+
 
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:3000',
@@ -152,12 +172,14 @@ CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:3000',
 ]
 
+
 PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.Argon2PasswordHasher",
     "django.contrib.auth.hashers.PBKDF2PasswordHasher",
     "django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher",
     "django.contrib.auth.hashers.BCryptSHA256PasswordHasher",
 ]
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
@@ -185,8 +207,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
 # usar esto para 
-# STATIC_ROOT = os.path.join(BASE_DIR, 'frontend/build/')
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static_root')
 
 STATIC_URL = '/static/'
 
@@ -219,14 +240,15 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 12
 }
 
+
 AUTH_USER_MODEL = 'accounts.UserAccount'
+
 
 AUTHENTICATION_BACKENDS = (
     'social_core.backends.google.GoogleOAuth2',
     'social_core.backends.facebook.FacebookOAuth2',
     'django.contrib.auth.backends.ModelBackend',
 )
-
 
 
 SIMPLE_JWT = {
@@ -239,6 +261,7 @@ SIMPLE_JWT = {
         'rest_framework_simplejwt.tokens.AccessToken',
     )
 }
+
 
 DJOSER = {
     'LOGIN_FIELD': 'email',
@@ -256,14 +279,16 @@ DJOSER = {
     'SOCIAL_AUTH_TOKEN_STRATEGY': 'djoser.social.token.jwt.TokenStrategy',
     'SOCIAL_AUTH_ALLOWED_REDIRECT_URIS': ['http://localhost:8000/google', 'http://localhost:8000/facebook'],
     'SERIALIZERS': {
-        'user_create': 'accounts.serializers.UserCreateSerializer',
-        'user': 'accounts.serializers.UserCreateSerializer',
-        'current_user': 'accounts.serializers.UserCreateSerializer',
+        'user_create': 'apps.accounts.serializers.UserCreateSerializer',
+        'user': 'apps.accounts.serializers.UserCreateSerializer',
+        'current_user': 'apps.accounts.serializers.UserCreateSerializer',
         'user_delete': 'djoser.serializers.UserDeleteSerializer',
     },
 }
 
+
 AUTH_USER_MODEL="accounts.UserAccount"
+
 
 EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'
 

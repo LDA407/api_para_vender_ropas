@@ -1,0 +1,1205 @@
+{
+	"info": {
+		"_postman_id": "62c07bad-04f5-4b3f-9350-15957bae3ff9",
+		"name": "Django E-commerce",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "26036164"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Authentications",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\" : \"david245@gmail.com\",\r\n    \"full_name\" : \"asdausbdn\",\r\n    \"password\" : \"asdgasuydas\",\r\n    \"re_password\": \"asdgasuydas\"\r\n}"
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/auth/users/",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"auth",
+								"users",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Activation user",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"uid\" : \"MQ\",\r\n    \"token\" : \"bjwhaf-eddd0ddc2f8565623abf48f3d313ede0\"\r\n}"
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/auth/users/activation/",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"auth",
+								"users",
+								"activation",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login jwt create",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\" : \"david245@gmail.com\",\r\n    \"password\" : \"asdgasuydas\"\r\n}"
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/auth/jwt/create/",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"auth",
+								"jwt",
+								"create",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh Token",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"refresh\": \"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTY3OTUxNjY4MSwianRpIjoiOWQ2YzQ3NDNmZmYzNDczYzkxN2VhMWQxMDA4NzhlNWMiLCJ1c2VyX2lkIjoxfQ.Uf-IxCmpEw4p1f9vdsfK8ZXE_7z3uu30i-6n-lHIa68\"\r\n}"
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/auth/jwt/refresh/",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"auth",
+								"jwt",
+								"refresh",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify token",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"token\" : \"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjc3NTI5NDk5LCJqdGkiOiIzZDc5ZTgwY2ZhY2Q0NzkxOWRlYjE1OTllMTdhNzc2MiIsInVzZXJfaWQiOjF9.btVriWHfdfYj2izBFIgsGg2K-aTqidiGk-7hczGSve0\"\r\n}"
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/auth/jwt/verify",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"auth",
+								"jwt",
+								"verify"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "View user info",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "JWT  eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjc3NTI5NDk5LCJqdGkiOiIzZDc5ZTgwY2ZhY2Q0NzkxOWRlYjE1OTllMTdhNzc2MiIsInVzZXJfaWQiOjF9.btVriWHfdfYj2izBFIgsGg2K-aTqidiGk-7hczGSve0",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"token\" : \"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjc3MjMyOTc1LCJqdGkiOiIxMDExMDk3Njc1OWU0MGFkODFlN2NhMmUxNzI5NDUwZiIsInVzZXJfaWQiOjV9.YcfFp-hm6ps9Lhs_SUQDVm0wccIfdNQrMJsr6fwNUKU\"\r\n}"
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/auth/users/me/",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"auth",
+								"users",
+								"me",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Updated user",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "JWT  eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjc3NTI5NDk5LCJqdGkiOiIzZDc5ZTgwY2ZhY2Q0NzkxOWRlYjE1OTllMTdhNzc2MiIsInVzZXJfaWQiOjF9.btVriWHfdfYj2izBFIgsGg2K-aTqidiGk-7hczGSve0",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"\" : \"\",\r\n    \"\" : \"\"\r\n    \"\" : \"\"\r\n}"
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/auth/users/me/",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"auth",
+								"users",
+								"me",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete user",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "JWT  eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjc3NTI5NDk5LCJqdGkiOiIzZDc5ZTgwY2ZhY2Q0NzkxOWRlYjE1OTllMTdhNzc2MiIsInVzZXJfaWQiOjF9.btVriWHfdfYj2izBFIgsGg2K-aTqidiGk-7hczGSve0",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"current_password\" : \"\"\r\n}"
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/auth/users/me/",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"auth",
+								"users",
+								"me",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Confirm user",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "JWT  eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjc3NTI5NDk5LCJqdGkiOiIzZDc5ZTgwY2ZhY2Q0NzkxOWRlYjE1OTllMTdhNzc2MiIsInVzZXJfaWQiOjF9.btVriWHfdfYj2izBFIgsGg2K-aTqidiGk-7hczGSve0",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"token\" : \"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjc3MjMyOTc1LCJqdGkiOiIxMDExMDk3Njc1OWU0MGFkODFlN2NhMmUxNzI5NDUwZiIsInVzZXJfaWQiOjV9.YcfFp-hm6ps9Lhs_SUQDVm0wccIfdNQrMJsr6fwNUKU\"\r\n}"
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/auth/users/confirm/",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"auth",
+								"users",
+								"confirm",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Resend activation",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "JWT  eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjc3NTI5NDk5LCJqdGkiOiIzZDc5ZTgwY2ZhY2Q0NzkxOWRlYjE1OTllMTdhNzc2MiIsInVzZXJfaWQiOjF9.btVriWHfdfYj2izBFIgsGg2K-aTqidiGk-7hczGSve0",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\" : \"\"\r\n}"
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/auth/users/resend_activation/",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"auth",
+								"users",
+								"resend_activation",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "JWT  eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjc3NTI5NDk5LCJqdGkiOiIzZDc5ZTgwY2ZhY2Q0NzkxOWRlYjE1OTllMTdhNzc2MiIsInVzZXJfaWQiOjF9.btVriWHfdfYj2izBFIgsGg2K-aTqidiGk-7hczGSve0",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"new_password\":\"\",\r\n    \"re_new_password\":\"\",\r\n    \"current_password\":\"\"\r\n}"
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/auth/users/set_password/",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"auth",
+								"users",
+								"set_password",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Reset password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "JWT  eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjc3NTI5NDk5LCJqdGkiOiIzZDc5ZTgwY2ZhY2Q0NzkxOWRlYjE1OTllMTdhNzc2MiIsInVzZXJfaWQiOjF9.btVriWHfdfYj2izBFIgsGg2K-aTqidiGk-7hczGSve0",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\" : \"\"\r\n}"
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/auth/users/reset_password/",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"auth",
+								"users",
+								"reset_password",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Reset password confirm",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "JWT  eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjc3NTI5NDk5LCJqdGkiOiIzZDc5ZTgwY2ZhY2Q0NzkxOWRlYjE1OTllMTdhNzc2MiIsInVzZXJfaWQiOjF9.btVriWHfdfYj2izBFIgsGg2K-aTqidiGk-7hczGSve0",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"uuid\":\"\",\r\n    \"token\" : \"\",\r\n    \"new_username\":\"\",\r\n    \"re_new_username\":\"\"\r\n}"
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/auth/users/reset_password_confirm/",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"auth",
+								"users",
+								"reset_password_confirm",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set username",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "JWT  eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjc3NTI5NDk5LCJqdGkiOiIzZDc5ZTgwY2ZhY2Q0NzkxOWRlYjE1OTllMTdhNzc2MiIsInVzZXJfaWQiOjF9.btVriWHfdfYj2izBFIgsGg2K-aTqidiGk-7hczGSve0",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"new_username\":\"\",\r\n    \"re_new_username\":\"\",\r\n    \"current_password\":\"\"\r\n}"
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/auth/users/set_username/",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"auth",
+								"users",
+								"set_username",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Reset username",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "JWT  eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjc3NTI5NDk5LCJqdGkiOiIzZDc5ZTgwY2ZhY2Q0NzkxOWRlYjE1OTllMTdhNzc2MiIsInVzZXJfaWQiOjF9.btVriWHfdfYj2izBFIgsGg2K-aTqidiGk-7hczGSve0",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\" : \"\"\r\n}"
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/auth/users/reset_username/",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"auth",
+								"users",
+								"reset_username",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Reset username confirm",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "JWT  eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjc3NTI5NDk5LCJqdGkiOiIzZDc5ZTgwY2ZhY2Q0NzkxOWRlYjE1OTllMTdhNzc2MiIsInVzZXJfaWQiOjF9.btVriWHfdfYj2izBFIgsGg2K-aTqidiGk-7hczGSve0",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"uuid\":\"\",\r\n    \"token\" : \"\",\r\n    \"new_username\":\"\",\r\n    \"re_new_username\":\"\"\r\n}"
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/auth/users/reset_username_confirm/",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"auth",
+								"users",
+								"reset_username_confirm",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Cart",
+			"item": [
+				{
+					"name": "Obtener carrito",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "JWT eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjc3NTI5NDk5LCJqdGkiOiIzZDc5ZTgwY2ZhY2Q0NzkxOWRlYjE1OTllMTdhNzc2MiIsInVzZXJfaWQiOjF9.btVriWHfdfYj2izBFIgsGg2K-aTqidiGk-7hczGSve0",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/cart/get_items",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"cart",
+								"get_items"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Agregar productos",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT  eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjc3NDc4OTYzLCJqdGkiOiJhMDZmZjQ2NzgxNjc0NmQzYjc4NGU1N2RkNzIxOTYwMSIsInVzZXJfaWQiOjF9.hAKjBG1LLk9Nz2vUPuK8hDNHRcR1OdvbirssHplV_PU",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"product_id\" : \"26\"\r\n}"
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/cart/add_item",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"cart",
+								"add_item"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener el total",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "default"
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT  eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjc3NDc4OTYzLCJqdGkiOiJhMDZmZjQ2NzgxNjc0NmQzYjc4NGU1N2RkNzIxOTYwMSIsInVzZXJfaWQiOjF9.hAKjBG1LLk9Nz2vUPuK8hDNHRcR1OdvbirssHplV_PU",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/cart/get_total",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"cart",
+								"get_total"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener el total de items",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "default"
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT  eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjc3NDc4OTYzLCJqdGkiOiJhMDZmZjQ2NzgxNjc0NmQzYjc4NGU1N2RkNzIxOTYwMSIsInVzZXJfaWQiOjF9.hAKjBG1LLk9Nz2vUPuK8hDNHRcR1OdvbirssHplV_PU",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/cart/get_items_total",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"cart",
+								"get_items_total"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar items",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT  eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjc3NDc4OTYzLCJqdGkiOiJhMDZmZjQ2NzgxNjc0NmQzYjc4NGU1N2RkNzIxOTYwMSIsInVzZXJfaWQiOjF9.hAKjBG1LLk9Nz2vUPuK8hDNHRcR1OdvbirssHplV_PU",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"product_id\": \"35\",\r\n    \"count\":\"3\"\r\n}"
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/cart/update_item",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"cart",
+								"update_item"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remover Item",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT  eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjc3NDc4OTYzLCJqdGkiOiJhMDZmZjQ2NzgxNjc0NmQzYjc4NGU1N2RkNzIxOTYwMSIsInVzZXJfaWQiOjF9.hAKjBG1LLk9Nz2vUPuK8hDNHRcR1OdvbirssHplV_PU",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"product_id\":\"35\"\r\n}"
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/cart/remove_item",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"cart",
+								"remove_item"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Vaciar el carrito Copy",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT  eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjc3NDc4OTYzLCJqdGkiOiJhMDZmZjQ2NzgxNjc0NmQzYjc4NGU1N2RkNzIxOTYwMSIsInVzZXJfaWQiOjF9.hAKjBG1LLk9Nz2vUPuK8hDNHRcR1OdvbirssHplV_PU",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/cart/empty_cart",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"cart",
+								"empty_cart"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Sicronizar el carrito",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/cart/synch_cart",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"cart",
+								"synch_cart"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Coupons",
+			"item": []
+		},
+		{
+			"name": "Products",
+			"item": [
+				{
+					"name": "Obtener Productos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/products/list",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"products",
+								"list"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Categorias",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/products/categories",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"products",
+								"categories"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Producto",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/products/detail/34",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"products",
+								"detail",
+								"34"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener producto relacionado",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/products/related_products/4",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"products",
+								"related_products",
+								"4"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Buscar producto",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"category_id\": \"5\",\r\n    \"search\": \"Sandisk\"\r\n}"
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/products/search",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"products",
+								"search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Filtrar productos",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"category_id\": \"2\",\r\n    \"sortBy\": \"-date_created\",\r\n    \"price_range\": \"300\",\r\n    \"order\": \"\"\r\n}"
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/products/search/filtered",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"products",
+								"search",
+								"filtered"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Orders",
+			"item": []
+		},
+		{
+			"name": "Shipping",
+			"item": []
+		},
+		{
+			"name": "Payments",
+			"item": [
+				{
+					"name": "Obtain token",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "JWT  eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjc3NzMwNTk0LCJqdGkiOiI3ZWYyYjcxOGNkYzY0MzgyYjU5YmRmZmJlNTgzODA0MiIsInVzZXJfaWQiOjF9.VKizWv13yHDfiugRgaZT9Zm9Nv1eAEqEg_BK9JwdRPs",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/payment/token",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"payment",
+								"token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtain total pay",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT  eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjc3NDc4OTYzLCJqdGkiOiJhMDZmZjQ2NzgxNjc0NmQzYjc4NGU1N2RkNzIxOTYwMSIsInVzZXJfaWQiOjF9.hAKjBG1LLk9Nz2vUPuK8hDNHRcR1OdvbirssHplV_PU",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/payment/payment_total",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"payment",
+								"payment_total"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Make the pay",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT  eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjc3NDc4OTYzLCJqdGkiOiJhMDZmZjQ2NzgxNjc0NmQzYjc4NGU1N2RkNzIxOTYwMSIsInVzZXJfaWQiOjF9.hAKjBG1LLk9Nz2vUPuK8hDNHRcR1OdvbirssHplV_PU",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/payment/payment",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"payment",
+								"payment"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "New Request Copy 2",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
