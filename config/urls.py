@@ -18,9 +18,7 @@ urlpatterns = [
     path('api/shipping/', include('apps.shipping.urls')),
     path('api/orders/', include('apps.orders.urls')),
     path('api/payment/', include('apps.payment.urls')),
-    # path('api/profile/', include('user_profile.urls')),
-
-    # re_path(r'^.*', TemplateView.as_view(template_name="index.html"))
+    path('api/reviews/', include('apps.reviews.urls')),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

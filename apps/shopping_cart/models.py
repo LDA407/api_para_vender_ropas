@@ -5,17 +5,18 @@ from apps.product.models import Product
 from django.db.models import Count, F, Value, DecimalField
 User = settings.AUTH_USER_MODEL
 
-
+        
 class Cart(models.Model):
     class Meta:
+        db_table = 'shopping_cart'
         verbose_name = 'Shopping Cart'
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     total_items = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def _items_exists(self, cart, product=None):
-        return self.cartitem_set.filter(cart = cart, product=product).exists()
+    def _item_exists(self, product):
+        return self.cartitem_set.filter(product = product).exists()
 
     def get_total_amount(self):
         return self.cartitem_set.aggregate(
@@ -32,6 +33,10 @@ class Cart(models.Model):
 
 
 class CartItem(models.Model):
+    class Meta:
+        db_table = 'cartitem'
+        # verbose_name = 'Shopping Cart'
+
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     count = models.IntegerField()

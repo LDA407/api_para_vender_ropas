@@ -15,8 +15,8 @@ from ckeditor.fields import RichTextField
 
 
 class ProductManager(models.Manager):
-    def _exists(self, product_id):
-        return self.filter(product_id=product_id).exists()
+    # def _exists(self, product_id):
+    #     return self.filter(product_id=product_id).exists()
 
     def search_query(self, search_query):
         return self.filter(
@@ -25,10 +25,20 @@ class ProductManager(models.Manager):
         )
 
 
+# from django.core.validators import RegexValidator
+
+# def validate_letters(value):
+#     if not value.isalpha():
+#         raise ValidationError("El campo debe contener solo letras.")
+
 class Tag(models.Model):
     class Meta:
         db_table = "tag"
-    name = models.CharField(max_length=250, blank=False, null=False, unique=True)
+    name = models.CharField(
+        max_length=250,
+        unique=True,
+        # validators=[validate_letters]
+    )
 
     def __str__(self):
         return self.name
@@ -167,24 +177,3 @@ class Product(models.Model):
     def __str__(self) -> str:
         return self.name
 
-
-# class Comment(models.Model):
-#     # class Meta:
-#         # db_table = "comment"
-#     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-#     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-#     timestamp = models.DateTimeField(auto_now=True)
-#     content = models.TextField()
-
-#     def __str__(self):
-#         return self.user.username
-
-
-# class Like(models.Model ):
-#     # class Meta:
-#         # db_table = "like"
-#     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-#     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-
-#     def __str__(self):
-#         return self.user.username

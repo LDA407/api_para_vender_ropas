@@ -67,8 +67,7 @@ THIRD_PARTY_APPS=[
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
     'ckeditor',
-    'ckeditor_uploader',
-    # 'import_export',
+    'ckeditor_uploader'
 ]
 
 
@@ -339,5 +338,5 @@ if not DEBUG:
     MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{PUBLIC_MEDIA_LOCATION}/'
     DEFAULT_FILE_STORAGE = 'core.storage_backends.MediaStore'"""
 
-    STATIC_ROOT = os.path.join(BASE_DIR, 'frontend/build/static/')
+    STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
     # STATICFILES_DIRS = (os.path.join(BASE_DIR, ''),)

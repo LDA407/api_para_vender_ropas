@@ -1,8 +1,8 @@
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, get_list_or_404
 from rest_framework.views import APIView
 from rest_framework import permissions
 from .models import Product
-from .serializers import ProductSerializer
+from .serializers import *
 
 from .models import Category
 from utils.responses import *
@@ -10,21 +10,14 @@ from utils.responses import *
 
 class ListCategoriesView(APIView):
     permission_classes = (permissions.AllowAny,)
-
-    def get(self, format=None):
+    
+    def get(self, request, format=None):
         categories = Category.objects.all()
 
         if categories.exists():
-            data = []
-            for cat in categories:
-                if not cat.parent:
-                    sub_categories = [
-                        {'id': sub_cat.id, 'name': sub_cat.name}
-                        for sub_cat in categories
-                        if sub_cat.parent and sub_cat.parent.id == cat.id
-                    ]
-                    data.append({'id': cat.id, 'name': cat.name, 'sub_categories': sub_categories})
-            return success_response({'categories': data})
+            serializer = ListCategoriesSerializer({'categories': categories})
+            print(serializer.data)
+            return Response(serializer.data)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -32,12 +25,11 @@ class ProductListView(APIView):
     permission_classes = (permissions.AllowAny,)
     def get(self, request, format=None):
         sortBy = request.query_params.get('sortBy')
+        order = request.query_params.get('order')
+        limit = request.query_params.get('limit')
 
         if sortBy not in ["-date_created", "price", "sold", "name"]:
             sortBy = "date_created"
-
-        order = request.query_params.get('order')
-        limit = request.query_params.get('limit')
 
         if not limit:
             limit = 6
@@ -113,12 +105,7 @@ class ListRelatedView(APIView):
     permission_classes = (permissions.AllowAny,)
 
     def get(self, request, productId, format=None):
-        try:
-            product = Product.objects.get(id=productId)
-        except Product.DoesNotExist as error:
-            return not_found({'Error': f'{str(error)}'})
-        
-        # =====
+        product = get_object_or_404(Product, id=productId)
         category = product.category
         related_products = Product.objects.filter(category=category).exclude(id=productId).order_by('-sold')
 

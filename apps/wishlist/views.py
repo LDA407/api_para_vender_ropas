@@ -12,21 +12,11 @@ class GetItemsView(APIView):
     permission_classes = (permissions.AllowAny,)
 
     def get(self, request, format=None):
-        user = self.request.user
         try:
-            wishlist = WishList.objects.get(user = user)
-            wishlist_items = WishListItem.objects.get(wishlist=wishlist)
-            result = []
-            if WishListItem.objects.filter(wishlist=wishlist).exists():
-                for item in wishlist_items:
-                    product = Product.objects.get(id=item.product.id)
-                    product = ProductSerializer(product)
-                    result.append({
-                        'id': item.id,
-                        'product': product.data,
-                    })
-                return success_response({'wishlist': result})
-
+            wishlist = get_object_or_404(WishList, user = self.request.user)
+            wishlist_items = get_object_or_404(WishListItem, wishlist=wishlist)
+            result = WishListItemSerializer(wishlist_items, many = True)
+            return success_response({'wishlist': result})
         except Exception as error:
             return server_error({'error': f'{error}'})
 
@@ -61,10 +51,12 @@ class AddItemView(APIView):
             
             cart = Cart.objects.get(user=user)
 
-            if cart._cartitems_exists(cart, product):
+            cart_exists = cart._items_exists(cart, product) 
+
+            if cart_exists:
                 CartItem.objects.filter(cart=cart, product=product).delete()
             
-                if not cart._cartitems_exists(cart, product):
+                if not cart_exists:
                     Cart.objects.filter(user=user).update( total_items =-1 )
             
             wishlist_items = WishListItem.objects.filter(wishlist=wishlist)
@@ -112,14 +104,16 @@ class RemoveItemView(APIView):
             product = Product.objects.get(id = product_id)
             wishlist = WishList.objects.get(user=user)
 
-            if not WishListItem.objects.filter(wishlist=wishlist, product=product).exists():
+            wishlist_exists = WishListItem.objects.filter(wishlist=wishlist, product=product).exists()
+
+            if not wishlist_exists:
                 return not_found({'error':'this product not in your wishlist'})
             
             WishListItem.objects.filter(
                 wishlist = wishlist, product = product
             ).delete()
 
-            if not WishListItem.objects.filter(wishlist=wishlist, product=product).exists():
+            if not wishlist_exists:
                 WishList.objects.filter(user=user).update(total_items =- 1)
             
             wishlist_items = WishListItem.objects.filter(wishlist=wishlist)

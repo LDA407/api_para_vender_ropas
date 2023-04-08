@@ -1,109 +1,51 @@
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, get_list_or_404
 from rest_framework.views import APIView
 from rest_framework import permissions
-from product.models import Product
-from product.serializers import ProductSerializer
+from apps.product.models import Product
+from .serializers import ReviewSerializer
 from .models import Review
-from backend.utils.responses import *
+from utils.responses import *
 
 
-class GetProductReviewView(APIView):
+class GetReview(APIView):
     permission_classes = (permissions.AllowAny,)
     
     def get(self, request, productId, format=None):
-        try: product_id = int(productId)
-        except ValueError:
-            return bad_request({'error': 'The ID must be an integer'})
-        
         try:
-            if not Product.products._exists(product_id):
-                return not_found({'error': f'The product with id {product_id} does not exist'})
-
-            product = Product.objects.get(id = product_id)
-            result = []
+            product = get_object_or_404(Product, id = productId)
             if Review.objects.filter(product=product).exists():
-                reviews = Review.objects.get(product=product)
-                for review in reviews:
-                    product = Product.objects.get(id=review.product.id)
-                    product = ProductSerializer(product)
-                    result.append({
-                        'id': review.id,
-                        'user': review.user.first_name,
-                        'rating' : review.rating,
-                        'comment' : review.comment,
-                        'created_at' : review.created_at
-                        
-                    })
-                return success_response({'cart': result})
+                reviews = Review.objects.filter(product=product)
+                serializer = list(ReviewSerializer(reviews, many = True).data)
+                return success_response({'reviews': serializer})
+            return not_content({'no result': "not reviews"})
         except Exception as error:
             return server_error({'error': f'{error}'})
 
 
-class CreateProductReviewView(APIView):
-    
+class CreateReview(APIView):
     def post(self, request, productId, format=None):
-        user = self.request.user
-        data = self.request.data
+        user = request.user
+        data = request.data
+        product = get_object_or_404(Product, id = productId)
 
-        try: product_id = int(productId)
-        except ValueError:
-            return bad_request({'error': 'The ID must be an integer'})
-        
-        try:
-            if not Product.products._exists(product_id):
-                return not_found({'error': f'The product with id {product_id} does not exist'})
+        if Review.objects.filter(user=user, product=product).exists():
+            return conflict_response({'error': f'A review for this product has already been created'})
 
-            product = Product.objects.get(id = product_id)
-            result = []
-            results = []
+        serializer = ReviewSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save(user=user, product=product)
+            review = serializer.data
 
-            if Review.objects.filter(user = user, product = product).exists():
-                return conflict_response({'error': f'The review for this product already created'})
-            
-            review = Review.objects.create(
-                user = data.get('user'),
-                product = data.get('product'),
-                rating = data.get('rating'),
-                comment = data.get('comment')
-            )
-
-            if Review.objects.filter(user=user, product=product).exists():
-                result.append({
-                    'id'           : review.id,
-                    'user'         : review.user.first_name,
-                    'rating'       : review.rating,
-                    'comment'      : review.comment,
-                    'created_at'   : review.created_at
-                })
-
-                reviews = Review.objects.order_by('-created_at').filter(
-                    product = product
-                )
-                for review in reviews:
-                    results.append({
-                        'id'           : review.id,
-                        'user'         : review.user.first_name,
-                        'rating'       : review.rating,
-                        'comment'      : review.comment,
-                        'created_at'   : review.created_at
-                    })
-            
-            return success_response({'review': result, 'reviews': results})
-
-        except Exception as error:
-            return server_error({'error': f'{error}'})
+            reviews = Review.objects.order_by('-created_at').filter(product=product)
+            results = ReviewSerializer(reviews, many=True).data
+            return created_response({'review': review, 'reviews': results})
+        return bad_request(serializer.errors)
 
 
-class UpdateProductReviewView(APIView):
-    
+class UpdateReview(APIView):
     def put(self, request, productId, format=None):
         user = self.request.user
         data = self.request.data
-
-        try: product_id = int(productId)
-        except ValueError:
-            return bad_request({'error': 'The product ID must be an integer'})
-        # ====================
 
         try: rating = float(data.get('rating'))
         except ValueError:
@@ -116,131 +58,52 @@ class UpdateProductReviewView(APIView):
         # ====================
         
         try:
-            if not Product.products._exists(product_id):
-                return not_found({'error': f'The product with ID {product_id} does not exist'})
-            
-            product = Product.objects.get(id = product_id)
-
+            product = get_object_or_404(Product, id = productId)
             if not Review.objects.filter(user = user, product = product).exists():
                 return conflict_response({'error': 'The review for this product does not exist'})
             
-            result = []
-            results = []
-
-            if Review.objects.filter(user=user, product=product).exists():
-                result.append({
-                    'id': review.id,
-                    'user': review.user.first_name,
-                    'rating': review.rating,
-                    'comment': review.comment,
-                    'created_at': review.created_at
-                })
-
-                reviews = Review.objects.order_by('-created_at').filter(
-                    product=product
-                )
-                for review in reviews:
-                    results.append({
-                        'id': review.id,
-                        'user': review.user.first_name,
-                        'rating': review.rating,
-                        'comment': review.comment,
-                        'created_at': review.created_at
-                    })
-
-            return success_response({'review': result, 'reviews': results})
+            serializer = ReviewSerializer(rating = rating, comment = comment)
+            if serializer.is_valid():
+                serializer.save(user=user, product=product)
+                review = serializer.data
+                reviews = Review.objects.order_by('-created_at').filter(product=product)
+                results = ReviewSerializer(reviews, many=True).data
+                return created_response({'review': review, 'reviews': results})
+            return not_content({'error': "no reviews"})
         except Exception as error:
             return server_error({'error': f'{error}'})
 
 
-class DeleteProductReviewView(APIView):
-    
+class DeleteReview(APIView):
     def delete(self, request, productId, format=None):
-        user = self.request.user
-        data = self.request.data
+        product = get_object_or_404(Product, id = productId)
+        review = get_object_or_404(Review, user = self.request.user, product=product)
+        review.delete()
 
-        try: product_id = int(productId)
-        except ValueError:
-            return bad_request({'error': 'The product ID must be an integer'})
-        # ====================
-        try:
-            if not Product.products._exists(product_id):
-                return not_found({'error': f'The product with ID {product_id} does not exist'})
-
-            product = Product.objects.get(id=product_id)
-            results = []
-
-            if Review.objects.filter(user=user, product=product).exists():
-                Review.objects.filter(user=user, product=product).delete()
-                reviews = Review.objects.order_by('-created_at').filter(
-                    product=product
-                )
-                for review in reviews:
-                    results.append({
-                        'id': review.id,
-                        'user': review.user.first_name,
-                        'rating': review.rating,
-                        'comment': review.comment,
-                        'created_at': review.created_at
-                    })
-                return success_response({'reviews': results})
-            return not_found({'error': f'The review for this product does not exist'})
-        except Exception as error:
-            return server_error({'error': f'{error}'})
+        reviews = Review.objects.order_by('-created_at').filter(product = product)
+        results = ReviewSerializer(reviews, many = True).data
+        return success_response({'reviews': results})
 
 
-class FilterProductReviewView(APIView):
+class FilterReview(APIView):
     permission_classes = (permissions.AllowAny,)
 
     def get(self, request, productId, format=None):
-        user = self.request.user
-        data = self.request.data
-
-        try: product_id = int(productId)
-        except ValueError:
-            return bad_request({'error': 'The product ID must be an integer'})
-        # ====================
-
-        if not Product.products._exists(product_id):
-            return not_found({'error': f'The product with ID {product_id} does not exist'})
-        # ====================
-
-        product = Product.objects.get(id=product_id)
-        rating = request.query_params.get('rating')
-
-        try: rating = float(data.get('rating'))
-        except ValueError:
-            return bad_request({'error': 'Rating must be a decimal value'})
+        product = get_object_or_404(Product, id=productId)
+        rating = request.query_params.get('rating', None)
 
         try:
-            if not rating:
+            if rating:
+                rating = float(rating)
+                rating = max(min(rating, 5.0), 0.5)
+            else:
                 rating = 5.0
-            elif rating > 5.0:
-                rating = 5.0
-            elif rating < 0.5:
-                rating = 0.5
             
-            results = []
-            
-            if Review.objects.filter(product=product).exists():
-                if rating == 0.5:
-                    reviews = Review.objects.order_by('-created_at').filter(
-                        rating=rating, product=product
-                    )
-                else:
-                    reviews = Review.objects.order_by('-created_at').filter(
-                        rating__lte=rating, product=product
-                    ).filter(rating__gte=(rating-0.5), product=product)
-                
-                for review in reviews:
-                    results.append({
-                        'id': review.id,
-                        'user': review.user.first_name,
-                        'rating': review.rating,
-                        'comment': review.comment,
-                        'created_at': review.created_at
-                    })
-                return success_response({'reviews': results})
+            reviews = Review.objects.filter(
+                product=product, rating__gte=rating-0.5, rating__lte=rating
+            ).order_by('-created_at')
+            results = ReviewSerializer(reviews, many=True).data
+            return success_response({'reviews': results})
 
         except Exception as error:
             return server_error({'error': f'{error}'})

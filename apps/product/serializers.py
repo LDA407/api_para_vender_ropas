@@ -1,6 +1,32 @@
 from rest_framework import serializers
 from .models import *
 
+from rest_framework import serializers
+from .models import Category
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ('id', 'name')
+
+class ListCategoriesSerializer(serializers.Serializer):
+    categories = serializers.SerializerMethodField()
+
+    def get_categories(self, obj):
+        categories = Category.objects.filter(parent=None)
+        data = []
+        for category in categories:
+            sub_categories = Category.objects.filter(parent=category)
+            sub_category_data = CategorySerializer(sub_categories, many=True).data
+            data.append({
+                'id': category.id,
+                'name': category.name,
+                'sub_categories': sub_category_data
+            })
+        return data
+
+
+
 
 # class TagSerializer(serializers.ModelSerializer):
 #     class Meta:
