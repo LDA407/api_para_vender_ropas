@@ -1,48 +1,40 @@
-from django.shortcuts import get_object_or_404
-from rest_framework.views import APIView
+from django.shortcuts import get_list_or_404, get_object_or_404
+from apps.product.models import Product
+from apps.product.serializers import ProductSerializer
 from rest_framework import permissions
-from .models import UserProfile
-# from .serializers import UserProfileSerializer
-from accounts.serializers import UserModelSerializer
+from rest_framework.views import APIView
+from apps.shopping_cart.models import Cart, CartItem
+
 from utils.responses import *
 
+from .models import Review, WishList, WishListItem
+# from .models import UserProfile
+from .serializers import *
 
-class GetUserProfileView(APIView):
-    def get(self, request, format=None):
-        try:
-            user_profile = get_object_or_404(UserProfile, user = self.request.user)
-            user_profile = UserProfileSerializer(user_profile)
-            return success_response({'profile': user_profile.data})
-        except Exception as e:
-            return server_error({'error': f'{e}'})
-
-
-class UdateUserProfile(APIView):
-    def put(self, request, format=None):
-        try:
-            user = self.request.user
-            data = self.request.data
-
-            UserProfile.objects.filter(user=user).update(**data)
-
-            user_profile = UserProfile.objects.filter(user=user)
-            user_profile = UserProfileSerializer(user_profile)
-
-            return success_response({'profile': user_profile.data})
-        except Exception as e:
-            return server_error({'error': f'{e}'})
+# class GetUserProfileView(APIView):
+#     def get(self, request, format=None):
+#         try:
+#             user_profile = get_object_or_404(UserProfile, user = self.request.user)
+#             user_profile = UserProfileSerializer(user_profile)
+#             return success_response({'profile': user_profile.data})
+#         except Exception as e:
+#             return server_error({'error': f'{e}'})
 
 
-from django.shortcuts import get_object_or_404
-from rest_framework.views import APIView
-from rest_framework import permissions
-from shopping_cart.models import Cart, CartItem
-from product.models import Product
-from product.serializers import ProductSerializer
-from .models import WishList, WishListItem
-from .serializers import WishListItemSerializer
-from utils.responses import *
+# class UdateUserProfile(APIView):
+#     def put(self, request, format=None):
+#         try:
+#             user = self.request.user
+#             data = self.request.data
 
+#             UserProfile.objects.filter(user=user).update(**data)
+
+#             user_profile = UserProfile.objects.filter(user=user)
+#             user_profile = UserProfileSerializer(user_profile)
+
+#             return success_response({'profile': user_profile.data})
+#         except Exception as e:
+#             return server_error({'error': f'{e}'})
 
 
 class GetItemsView(APIView):
@@ -163,16 +155,6 @@ class RemoveItemView(APIView):
 
         except Exception as error:
             return server_error({'error': f'Algo salió mal al eliminar el elemento del carrito: {str(error)}'})
-
-
-
-from django.shortcuts import get_object_or_404, get_list_or_404
-from rest_framework.views import APIView
-from rest_framework import permissions
-from apps.product.models import Product
-from .serializers import ReviewSerializer
-from .models import Review
-from utils.responses import *
 
 
 class GetReview(APIView):

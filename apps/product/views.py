@@ -6,10 +6,23 @@ from .serializers import *
 from utils.responses import *
 
 
-class ListCategoriesView(generics.ListAPIView):
+class ListCategoriesView(APIView):
     permission_classes = (permissions.AllowAny,)
-    serializer_class = ListCategoriesSerializer
-    queryset = Category.objects.all()
+    categories = Category.objects.all()
+
+    def get(self, request, format=None):
+        data = []
+        for category in self.categories:
+            sub_categories = Category.objects.filter(parent=category.id)
+            data.append({
+                'id': category.id,
+                'name': category.name,
+                'sub_categories': [{
+                    'id': sub_category.id,
+                    'name': sub_category.name,
+                } for sub_category in sub_categories ]
+            })
+        return success_response(data)
 
 
 class ProductListView(generics.ListAPIView):
@@ -26,9 +39,7 @@ class ProductListView(generics.ListAPIView):
 # class ProductListView(APIView):
 #     permission_classes = (permissions.AllowAny,)
 #     def get(self, request, format=None):
-#         sortBy = request.query_params.get('sortBy')
-#         order = request.query_params.get('order')
-#         limit = request.query_params.get('limit')
+#         
 
 #         if sortBy not in ["-date_created", "price", "sold", "name"]:
 #             sortBy = "date_created"
@@ -83,7 +94,7 @@ class SearchProductView(APIView):
 
         if category_id == 0:
             search_result = ProductSerializer(search_result, many=True)
-            return success_response({'search_result': search_result.data})
+            return success_response(search_result.data)
 
         category = get_object_or_404(Category, id=category_id)
 
@@ -98,7 +109,7 @@ class SearchProductView(APIView):
                 search_result = search_result.filter(category__in=filtered_categories)
 
         search_result = ProductSerializer(search_result.order_by('-date_created'), many=True)
-        return success_response({'search_result': search_result.data})
+        return success_response(search_result.data)
 
 
 class ListRelatedView(APIView):
@@ -114,10 +125,7 @@ class ListRelatedView(APIView):
 
         related_products = related_products[:3]
         related_products_serializer = ProductSerializer(related_products, many=True)
-
-        return success_response(
-            {'related_products': related_products_serializer.data},
-        )
+        return success_response(related_products_serializer.data)
 
 
 class FilterBySearchView(APIView):
@@ -166,5 +174,5 @@ class FilterBySearchView(APIView):
         products_results = ProductSerializer(products_results, many=True)
 
         if products_results:
-            return success_response({'filtered_products': products_results.data})
+            return success_response(products_results.data)
         return not_found({'Error': 'No products found'})

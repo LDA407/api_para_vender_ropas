@@ -1,19 +1,28 @@
 import braintree
-from rest_framework.views import APIView
-from rest_framework import permissions
-from django.core.mail import send_mail
-from django.shortcuts import get_object_or_404, get_list_or_404
 from django.conf import settings
-# from django.db.models import Q
-from apps.shopping_cart.models import Cart, CartItem
-from .models import FixedPriceCoupon, PorcentageCoupon, Order, OrderItem, FixedPriceCouponSerializer, PorcentageCouponSerializer
+from django.core.mail import send_mail
+from django.shortcuts import get_list_or_404, get_object_or_404
+from django.utils.decorators import method_decorator
+from django.views.decorators import csrf, http
+from rest_framework import permissions, generics
+from rest_framework.views import APIView
+
 from apps.product.models import Product
 from apps.shipping.models import Shipping
-
-
-from django.views.decorators import csrf, http
-from django.utils.decorators import method_decorator
+# from django.db.models import Q
+from apps.shopping_cart.models import Cart, CartItem
 from utils.responses import *
+
+from .models import (
+    FixedPriceCoupon,
+    FixedPriceCouponSerializer,
+    Order,
+    OrderItem,
+    OrderSerializer,
+    OrderItemSerializer,
+    PorcentageCoupon,
+    PorcentageCouponSerializer
+)
 
 # def catalog(request):
 # site_name = "Modern Musician"
@@ -46,20 +55,16 @@ gateway = braintree.BraintreeGateway(
 )
 
 
-from .models import Order, OrderItem
-from .serializers import *
-
-
-class ListOrderView(ListAPIView):
+class ListOrderView(generics.ListAPIView):
     serializer_class = OrderSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     ordering = ['-date_issued']
 
     def get_queryset(self):
         return Order.objects.filter(user=self.request.user)
 
 
-class OrderDetailView(RetrieveAPIView):
+class OrderDetailView(generics.RetrieveAPIView):
     serializer_class = OrderSerializer
     lookup_field = 'transaction_id'
     queryset = Order.objects.all()
@@ -67,9 +72,6 @@ class OrderDetailView(RetrieveAPIView):
     def get_queryset(self):
         user = self.request.user
         return self.queryset.filter(user=user)
-
-
-from utils.responses import *
 
 
 class CheckCouponView(APIView):
@@ -81,7 +83,6 @@ class CheckCouponView(APIView):
             if FixedPriceCoupon.objects.filter(name=coupon_name).exists():
                 coupon = FixedPriceCoupon.objects.get(name=coupon_name)
                 coupon = FixedPriceCouponSerializer(coupon)
-
             elif PorcentageCoupon.objects.filter(name=coupon_name).exists():
                 coupon = PorcentageCoupon.objects.get(name=coupon_name)
                 coupon = PorcentageCouponSerializer(coupon)
@@ -89,10 +90,8 @@ class CheckCouponView(APIView):
             if coupon:
                 return success_response({'coupon': coupon.data})
             return Response(status=status.HTTP_404_NOT_FOUND)
-        
         except Exception as e:
             return server_error({'error': f'{str(e)}'})
-
 
 
 class GenerateTokenView(APIView):

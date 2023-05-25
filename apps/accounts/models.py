@@ -1,12 +1,17 @@
-from utils.countries import Countries
-from django.urls import reverse
-from django.conf import settings
 import os
-from django.dispatch import receiver
-from django.db.models.signals import post_save
+from datetime import datetime
+
+from django.conf import settings
+from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
+                                        PermissionsMixin)
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser,PermissionsMixin,BaseUserManager
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.urls import reverse
+
+from apps.product.models import Product
 from apps.shopping_cart.models import Cart
+from utils.countries import Countries
 
 
 class AccountManegers(BaseUserManager):
@@ -58,14 +63,6 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
 #         UserProfile.objects.create(user=instance)
 
 
-# def user_directory_path(instance, filename):
-#     profile_picture_name = f'auth_user/{instance.user.get_full_name()}/profile.jpg'
-#     full_path = os.path.join(settings.MEDIA_ROOT, profile_picture_name)
-#     if os.path.exists(full_path):
-#         os.remove(full_path)
-#     return profile_picture_name
-
-
 # class UserProfile(models.Model):
 #     user = models.OneToOneField(UserAccount, on_delete=models.CASCADE, related_name='profile')
 #     full_name = models.CharField(max_length=255)
@@ -94,17 +91,8 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
 #         return reverse('user_profile:profile', args=[self.slug])
 
 
-from django.db import models
-from django.contrib.auth import get_user_model
-from apps.product.models import Product
-
-
-UserAccount = get_user_model()
-
-
 class WishList(models.Model):
-    user = models.OneToOneField(
-        UserAccount, on_delete=models.CASCADE, related_name='profile')
+    user = models.OneToOneField(UserAccount, on_delete=models.CASCADE)
     total_items = models.IntegerField(default=0)
 
     def __str__(self) -> str:
@@ -112,10 +100,20 @@ class WishList(models.Model):
 
 
 class WishListItem(models.Model):
-    user = models.ForeignKey(
-            UserAccount, on_delete=models.CASCADE)
+    user = models.ForeignKey(UserAccount, on_delete=models.CASCADE)
     wishlist = models.ForeignKey(WishList, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
 
     def __str__(self) -> str:
         return super().__str__()
+
+
+class Review(models.Model):
+    user = models.ForeignKey(UserAccount, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    rating = models.DecimalField(max_digits=2, decimal_places=1)
+    comment = models.TextField()
+    created_at = models.DateTimeField(default=datetime.now)
+
+    def __str__(self):
+        return self.comment

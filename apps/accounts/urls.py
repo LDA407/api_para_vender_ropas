@@ -1,15 +1,16 @@
-from django.urls import path
+from django.urls import path, re_path
+from .views import *
 
 app_name='accounts'
 
 urlpatterns = [
-	path('get_items', GetItemsView.as_view()),
-	path('add_item', AddItemView.as_view()),
-	path('get_items_total', GetItemTotalView.as_view()),
-	path('remove_item', RemoveItemView.as_view()),
-	path('<int:productId>', views.GetReview.as_view()),
-    path('new/<int:productId>', views.CreateReview.as_view()),
-    path('review', views.UpdateReview.as_view()),
-    path('del/<int:productId>', views.DeleteReview.as_view()),
-    path('filter/<int:productId>', views.FilterReview.as_view()),
+	path('wishlist/get_items', GetItemsView.as_view()),
+	path('wishlist/add_item', AddItemView.as_view()),
+	path('wishlist/get_items_total', GetItemTotalView.as_view()),
+	path('wishlist/remove_item', RemoveItemView.as_view()),
+	path('reviews/<int:productId>', GetReview.as_view()),
+    path('reviews/add/<int:productId>', CreateReview.as_view()),
+    path('reviews/update/', UpdateReview.as_view()),
+    path('reviews/delete/<int:productId>', DeleteReview.as_view()),
+    path('reviews/filter/<int:productId>', FilterReview.as_view()),
 ]

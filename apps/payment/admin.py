@@ -1,5 +1,10 @@
 from django.contrib import admin
-from .models import Order, OrderItem
+from .models import (
+	Order,
+	OrderItem,
+	FixedPriceCoupon,
+	PorcentageCoupon
+)
 
 # Register your models here.
 class OrderAdmin(admin.ModelAdmin):
@@ -26,9 +31,6 @@ class OrderItemAdmin(admin.ModelAdmin):
 admin.site.register(OrderItem ,OrderItemAdmin)
 
 
-from django.contrib import admin
-from .models import FixedPriceCoupon, PorcentageCoupon
-
 
 class FixedPriceCouponAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'discount_amount')
@@ -47,5 +49,4 @@ class PorcentageCouponAdmin(admin.ModelAdmin):
 
 
 admin.site.register(FixedPriceCoupon, FixedPriceCouponAdmin)
-
 admin.site.register(PorcentageCoupon, PorcentageCouponAdmin)

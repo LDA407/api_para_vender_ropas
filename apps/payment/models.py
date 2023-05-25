@@ -12,22 +12,6 @@ User = get_user_model()
 
 from django.db import models
 
-# Create your models here.
-class FixedPriceCoupon(models.Model):
-    name = models.CharField(max_length=255, unique=True)
-    discount_amount = models.DecimalField(max_digits=5, decimal_places=2)
-
-    def __str__(self) -> str:
-        return super().__str__()
-
-
-class PorcentageCoupon(models.Model):
-    name = models.CharField(max_length=255, unique=True)
-    discount_porcentage = models.IntegerField()
-
-    def __str__(self) -> str:
-        return super().__str__()
-
 
 class Order(models.Model):
 	class OrderStatus(models.TextChoices):
@@ -37,11 +21,7 @@ class Order(models.Model):
 		DELIVEDER = 'delivered'
 		CANCELLED = 'cancelled'
 	# id = models.UUIDField(default=uuid.uuid4, primary_key=True)
-	status = models.CharField(
-		max_length = 50,
-		choices = OrderStatus.choices,
-		default = OrderStatus.NOT_PROCESSED
-	)
+	status = models.CharField(max_length = 50, choices = OrderStatus.choices,default = OrderStatus.NOT_PROCESSED)
 	user = models.ForeignKey(User, on_delete=models.CASCADE)
 	transaction_id = models.CharField(max_length = 255, unique=True)
 	amount = models.DecimalField(max_digits = 5, decimal_places = 2)
@@ -51,11 +31,7 @@ class Order(models.Model):
 	city = models.CharField(max_length = 255)
 	province = models.CharField(max_length = 255)
 	zip_code = models.CharField(max_length = 255)
-	country = models.CharField(
-		max_length = 255,
-		choices = Countries.choices,
-		default = Countries.Canada
-	)
+	country = models.CharField(max_length = 255, choices = Countries.choices, default = Countries.Canada)
 	telephone = models.CharField(max_length = 255)
 	shipping_name = models.CharField(max_length = 255)
 	shipping_time = models.CharField(max_length = 255)
@@ -79,7 +55,6 @@ class OrderItem(models.Model):
 	data_added = models.DateTimeField(auto_now_add=True)
 
 
-
 class OrderItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderItem
@@ -101,6 +76,22 @@ class OrderSerializer(serializers.ModelSerializer):
             'id', 'user', 'transaction_id',
             'amount', 'date_issued', 'reference_number'
         ]
+
+
+class FixedPriceCoupon(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    discount_amount = models.IntegerField()
+
+    def __str__(self) -> str:
+        return super().__str__()
+
+
+class PorcentageCoupon(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    discount_porcentage = models.DecimalField(max_digits=5, decimal_places=2)
+
+    def __str__(self) -> str:
+        return super().__str__()
 
 
 class FixedPriceCouponSerializer(serializers.ModelSerializer):

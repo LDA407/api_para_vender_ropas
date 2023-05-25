@@ -5,14 +5,6 @@ from datetime import datetime
 from django.urls import reverse
 from ckeditor.fields import RichTextField
 
-# Create your models here.
-# def _directory_path(instance, filename):
-#     _picture_name = f'{instance.name}_thumbnails.jpg'
-#     full_path = os.path.join(settings.STATIC_ROOT, _picture_name)
-#     if os.path.exists(full_path):
-#         os.remove(full_path)
-#     return _picture_name
-
 
 class ProductManager(models.Manager):
 
@@ -29,14 +21,11 @@ class ProductManager(models.Manager):
 #     if not value.isalpha():
 #         raise ValidationError("El campo debe contener solo letras.")
 
+
 class Tag(models.Model):
     class Meta:
         db_table = "tag"
-    name = models.CharField(
-        max_length=250,
-        unique=True,
-        # validators=[validate_letters]
-    )
+    name = models.CharField(max_length=250,unique=True)
 
     def __str__(self):
         return self.name
@@ -46,13 +35,12 @@ class Category(models.Model):
     class Meta:
         db_table = "category"
         verbose_name_plural = 'Categories'
-    parent = models.ForeignKey('self', related_name='children', on_delete=models.CASCADE, blank=True, null=True)
+    parent = models.ForeignKey('self', related_name='children', on_delete = models.CASCADE, blank=True, null=True)
     name = models.CharField(max_length=255, unique=True)
 
     @classmethod
     def get_sub_categories(cls, instance):
         return list(cls.objects.filter(parent=instance))
-
 
     def __str__(self):
         return self.name

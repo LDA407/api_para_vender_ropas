@@ -5,7 +5,7 @@ from apps.product.models import Product
 from django.db.models import Count, F, Value, DecimalField
 User = settings.AUTH_USER_MODEL
 
-        
+
 class Cart(models.Model):
     class Meta:
         db_table = 'shopping_cart'

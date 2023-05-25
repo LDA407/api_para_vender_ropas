@@ -16,10 +16,7 @@ urlpatterns = [
     path('api/products/', include('apps.product.urls')),
     path('api/shopping_cart/', include('apps.shopping_cart.urls')),
     path('api/shipping/', include('apps.shipping.urls')),
-    path('api/orders/', include('apps.orders.urls')),
     path('api/payment/', include('apps.payment.urls')),
-    path('api/reviews/', include('apps.reviews.urls')),
-    path('api/coupons/', include('apps.coupons.urls')),
 
 ]
 if settings.DEBUG:

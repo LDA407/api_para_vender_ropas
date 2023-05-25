@@ -1,8 +1,14 @@
+from django.contrib.auth import get_user_model
 from djoser.serializers import UserCreateSerializer
 from rest_framework import serializers
-from django.contrib.auth import get_user_model
+
+from apps.product.models import Product
+from apps.product.serializers import ProductSerializer
+
+from .models import *
 
 User = get_user_model()
+
 
 class UserModelSerializer(UserCreateSerializer):
     class Meta(UserCreateSerializer.Meta):
@@ -10,15 +16,11 @@ class UserModelSerializer(UserCreateSerializer):
         fields= ('id','email', 'full_name')
 
 
-# class UserProfileSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = User
-#         fields = '__all__'
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = '__all__'
 
-
-from rest_framework import serializers
-from apps.product.serializers import ProductSerializer
-from .models import WishList, WishListItem
 
 class WishListItemSerializer(serializers.ModelSerializer):
     # user = serializers.CharField()
@@ -27,12 +29,6 @@ class WishListItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = WishListItem
         fields = ['id','user', 'wishlist', 'product']
-
-
-from rest_framework import serializers
-from apps.product.serializers import ProductSerializer
-from .models import Review
-from apps.product.models import Product
 
 
 class ReviewSerializer(serializers.ModelSerializer):

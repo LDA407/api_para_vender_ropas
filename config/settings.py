@@ -38,11 +38,8 @@ PROJECT_APPS = ['apps.accounts',]
 ECOMMERCE_APPS = [
     'apps.shopping_cart',
     'apps.product',
-    'apps.orders',
+    'apps.payment',
     'apps.shipping',
-    'apps.coupons',
-    'apps.reviews',
-    'apps.wishlist'
 ]
 
 
@@ -79,19 +76,6 @@ CKEDITOR_CONFIGS = {
 CKEDITOR_UPLOAD_PATH = "/media/"
 
 
-# WEBPACK_LOADER = {
-#     'DEFAULT': {
-#         'CACHE': not DEBUG,
-#         'BUNDLE_DIR_NAME': '/', # must end with slash
-#         'STATS_FILE': os.path.join(BASE_DIR, 'webpack-stats.json'),
-#         'POLL_INTERVAL': 0.1,
-#         'TIMEOUT': None,
-#         'IGNORE': [r'.+\.hot-update.js', r'.+\.map'],
-#         'LOADER_CLASS': 'webpack_loader.loader.WebpackLoader',
-#     }
-# }
-
-
 MIDDLEWARE = [
     'social_django.middleware.SocialAuthExceptionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
@@ -111,7 +95,6 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        # 'DIRS':[os.path.join(BASE_DIR, 'frontend/build')],
         'DIRS':[""],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -200,18 +183,11 @@ STATIC_URL = '/static/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
-# MEDIA_DIRS = (
-#     os.path.join(BASE_DIR, 'frontend/build/static/media'),
-# )
-
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static/'),
     # os.path.join(BASE_DIR, 'dist'),
 ]
 
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
