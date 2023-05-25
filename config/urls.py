@@ -19,6 +19,8 @@ urlpatterns = [
     path('api/orders/', include('apps.orders.urls')),
     path('api/payment/', include('apps.payment.urls')),
     path('api/reviews/', include('apps.reviews.urls')),
+    path('api/coupons/', include('apps.coupons.urls')),
+
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

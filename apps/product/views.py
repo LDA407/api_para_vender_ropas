@@ -1,67 +1,67 @@
 from django.shortcuts import get_object_or_404, get_list_or_404
 from rest_framework.views import APIView
-from rest_framework import permissions
-from .models import Product
+from rest_framework import permissions, generics, filters, generics, pagination
+from .models import *
 from .serializers import *
-
-from .models import Category
 from utils.responses import *
 
 
-class ListCategoriesView(APIView):
+class ListCategoriesView(generics.ListAPIView):
     permission_classes = (permissions.AllowAny,)
-    
-    def get(self, request, format=None):
-        categories = Category.objects.all()
-
-        if categories.exists():
-            serializer = ListCategoriesSerializer({'categories': categories})
-            print(serializer.data)
-            return Response(serializer.data)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    serializer_class = ListCategoriesSerializer
+    queryset = Category.objects.all()
 
 
-class ProductListView(APIView):
+class ProductListView(generics.ListAPIView):
     permission_classes = (permissions.AllowAny,)
-    def get(self, request, format=None):
-        sortBy = request.query_params.get('sortBy')
-        order = request.query_params.get('order')
-        limit = request.query_params.get('limit')
+    serializer_class = ProductSerializer
+    queryset = Product.objects.all()
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['name', 'description']
+    ordering_fields = ['date_created', 'price', 'sold', 'name']
+    ordering = 'date_created'
+    pagination_class = pagination.LimitOffsetPagination
 
-        if sortBy not in ["-date_created", "price", "sold", "name"]:
-            sortBy = "date_created"
 
-        if not limit:
-            limit = 6
+# class ProductListView(APIView):
+#     permission_classes = (permissions.AllowAny,)
+#     def get(self, request, format=None):
+#         sortBy = request.query_params.get('sortBy')
+#         order = request.query_params.get('order')
+#         limit = request.query_params.get('limit')
+
+#         if sortBy not in ["-date_created", "price", "sold", "name"]:
+#             sortBy = "date_created"
+
+#         if not limit:
+#             limit = 6
         
-        # =====
-        try: limit = int(limit);
-        except ValueError:
-            return bad_request({'Error': 'Not found'})
+#         # =====
+#         try: limit = int(limit);
+#         except ValueError:
+#             return bad_request({'Error': 'Not found'})
         
-        # =====
-        if order == "desc":
-            sortBy = "-" + sortBy
-            products = Product.objects.order_by(sortBy).all()[:int(limit)]
-        elif order == "asc":
-            products = Product.objects.order_by(sortBy).all()[:int(limit)]
-        else:
-            products = Product.objects.all()
+#         # =====
+#         if order == "desc":
+#             sortBy = "-" + sortBy
+#             products = Product.objects.order_by(sortBy).all()[:int(limit)]
+#         elif order == "asc":
+#             products = Product.objects.order_by(sortBy).all()[:int(limit)]
+#         else:
+#             products = Product.objects.all()
         
-        # =====
-        products = ProductSerializer(products, many=True)
-        if products:
-            return success_response({'products': products.data})
-        return not_found({'Error': 'Not product to the list'})
+#         # =====
+#         products = ProductSerializer(products, many=True)
+#         if products:
+#             return success_response({'products': products.data})
+#         return not_found({'Error': 'Not product to the list'})
 
 
-class DetailProductView(APIView):
+class DetailProductView(generics.RetrieveAPIView):
     permission_classes = (permissions.AllowAny,)
-
-    def get(self, request, productId, format=None):
-        product = get_object_or_404(Product, id=productId)
-        product = ProductSerializer(product)
-        return success_response({'product': product.data})
+    serializer_class = ProductSerializer
+    queryset = Product.objects.all()
+    lookup_field = "id"
 
 
 class SearchProductView(APIView):
@@ -109,7 +109,7 @@ class ListRelatedView(APIView):
         category = product.category
         related_products = Product.objects.filter(category=category).exclude(id=productId).order_by('-sold')
 
-        if not related_products.exists():
+        if not related_products:
             return success_response({'Error': 'No related products found'})
 
         related_products = related_products[:3]

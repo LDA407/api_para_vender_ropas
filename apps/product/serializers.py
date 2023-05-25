@@ -1,13 +1,12 @@
 from rest_framework import serializers
 from .models import *
 
-from rest_framework import serializers
-from .models import Category
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ('id', 'name')
+        
 
 class ListCategoriesSerializer(serializers.Serializer):
     categories = serializers.SerializerMethodField()
@@ -16,28 +15,21 @@ class ListCategoriesSerializer(serializers.Serializer):
         categories = Category.objects.filter(parent=None)
         data = []
         for category in categories:
-            sub_categories = Category.objects.filter(parent=category)
-            sub_category_data = CategorySerializer(sub_categories, many=True).data
+
             data.append({
                 'id': category.id,
                 'name': category.name,
-                'sub_categories': sub_category_data
+                'sub_categories': CategorySerializer(
+                    category.get_sub_categories(category),
+                    many=True
+                ).data
             })
         return data
-
-
 
 
 # class TagSerializer(serializers.ModelSerializer):
 #     class Meta:
 #         model = Tag
-#         fields = (,)
-#         read_only_fields = ('id',)
-
-
-# class CategorySerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Category
 #         fields = (,)
 #         read_only_fields = ('id',)
 
@@ -82,18 +74,12 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = [
-            'id',
-            'name',
-            'description',
-            'price',
-            'category',
-            'quantity',
-            'sold',
-            'galery',
-            'date_created',
+            'id', 'name', 'description', 'price',
+            'category', 'quantity', 'sold',
+            'galery', 'date_created',
             # 'get_image',
         ]
-        read_only_fields = ('id',)
+        # read_only_fields = ('id',)
     
     # def create(self, validated_data):
     #     product = Product.objects.create(**validated_data)

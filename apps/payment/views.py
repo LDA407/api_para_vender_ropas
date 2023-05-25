@@ -6,8 +6,7 @@ from django.shortcuts import get_object_or_404, get_list_or_404
 from django.conf import settings
 # from django.db.models import Q
 from apps.shopping_cart.models import Cart, CartItem
-from apps.coupons.models import FixedPriceCoupon, PorcentageCoupon
-from apps.orders.models import Order, OrderItem
+from .models import FixedPriceCoupon, PorcentageCoupon, Order, OrderItem, FixedPriceCouponSerializer, PorcentageCouponSerializer
 from apps.product.models import Product
 from apps.shipping.models import Shipping
 
@@ -21,6 +20,22 @@ from utils.responses import *
 # response_html = u"<html><body>Welcome to %s.</body></html>" % site_name
 # return HttpResponse(response_html)
 
+# from django.http import HttpResponseForbidden
+
+# class HttpsOnlyMixin:
+#     def dispatch(self, request, *args, **kwargs):
+#         if not request.is_secure():
+#             return HttpResponseForbidden("Error! This page can only be accessed using HTTPS.")
+
+#         if 'HTTP_X_FORWARDED_PROTO' in self.request.META and self.request.META['HTTP_X_FORWARDED_PROTO'] == 'https':
+#             self.request.is_secure = lambda: True
+
+#         if not self.request.is_secure():
+#             return not_suported_response("Insecure request. Please upgrade to HTTPS")
+
+#         return super().dispatch(request, *args, **kwargs)
+
+
 gateway = braintree.BraintreeGateway(
     braintree.Configuration(
         braintree.Environment.Sandbox,
@@ -29,6 +44,55 @@ gateway = braintree.BraintreeGateway(
         private_key=settings.BT_PRIVATE_KEY
     )
 )
+
+
+from .models import Order, OrderItem
+from .serializers import *
+
+
+class ListOrderView(ListAPIView):
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
+    ordering = ['-date_issued']
+
+    def get_queryset(self):
+        return Order.objects.filter(user=self.request.user)
+
+
+class OrderDetailView(RetrieveAPIView):
+    serializer_class = OrderSerializer
+    lookup_field = 'transaction_id'
+    queryset = Order.objects.all()
+
+    def get_queryset(self):
+        user = self.request.user
+        return self.queryset.filter(user=user)
+
+
+from utils.responses import *
+
+
+class CheckCouponView(APIView):
+    def get(self, request, format=None):
+        try:
+            coupon_name = request.query_params.get('coupon_name')
+            coupon = None
+
+            if FixedPriceCoupon.objects.filter(name=coupon_name).exists():
+                coupon = FixedPriceCoupon.objects.get(name=coupon_name)
+                coupon = FixedPriceCouponSerializer(coupon)
+
+            elif PorcentageCoupon.objects.filter(name=coupon_name).exists():
+                coupon = PorcentageCoupon.objects.get(name=coupon_name)
+                coupon = PorcentageCouponSerializer(coupon)
+
+            if coupon:
+                return success_response({'coupon': coupon.data})
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        
+        except Exception as e:
+            return server_error({'error': f'{str(e)}'})
+
 
 
 class GenerateTokenView(APIView):
@@ -43,19 +107,6 @@ class GenerateTokenView(APIView):
 
 
 class GetPaymentTotalView(APIView):
-
-    # def dispatch(self, request, *args, **kwargs):
-    #     if 'HTTP_X_FORWARDED_PROTO' in self.request.META and self.request.META['HTTP_X_FORWARDED_PROTO'] == 'https':
-    #         self.request.is_secure = lambda: True
-
-    #     if not self.request.is_secure():
-    #         return not_suported_response("Insecure request. Please upgrade to HTTPS")
-
-    #     if 'HTTP_AUTHORIZATION' not in self.request.META:
-    #         return unauthorized_response("Error! User not provided credentials")
-
-    #     return super().dispatch(request, *args, **kwargs)
-
     def get(self, request, format=None):
         user = self.request.user
         tax = 0.24
@@ -131,18 +182,6 @@ decorators = [http.require_http_methods(["POST"])]
 class ProcessPaymentView(APIView):
     permission_classes = (permissions.IsAuthenticated)
 
-    # def dispatch(self, request, *args, **kwargs):
-    #     if 'HTTP_X_FORWARDED_PROTO' in self.request.META and self.request.META['HTTP_X_FORWARDED_PROTO'] == 'https':
-    #         self.request.is_secure = lambda: True
-
-    #     if not self.request.is_secure():
-    #         return not_suported_response("Insecure request. Please upgrade to HTTPS")
-
-    #     if 'HTTP_AUTHORIZATION' not in self.request.META:
-    #         return unauthorized_response("Error! User not provided credentials")
-
-    #     return super().dispatch(request, *args, **kwargs)
-
     def post(self, request, format= None):
         _CARTS = Cart.objects.all()
         _PRODUCTS = Product.objects.all()
@@ -212,7 +251,7 @@ class ProcessPaymentView(APIView):
             from django.db.models import F
             for cart_item in cart_items:
                 # actualiza la cantidad de productos en stok
-                _PRODUCTS.filter(id=cart_item.product.id).update(
+                Product.objects.filter(id=cart_item.product.id).update(
                     quantity = F('quantity') - cart_item.count,
                     sold = F('sold') + cart_item.count
                 )

@@ -15,8 +15,6 @@ from ckeditor.fields import RichTextField
 
 
 class ProductManager(models.Manager):
-    # def _exists(self, product_id):
-    #     return self.filter(product_id=product_id).exists()
 
     def search_query(self, search_query):
         return self.filter(
@@ -51,8 +49,10 @@ class Category(models.Model):
     parent = models.ForeignKey('self', related_name='children', on_delete=models.CASCADE, blank=True, null=True)
     name = models.CharField(max_length=255, unique=True)
 
-    def get_subcategories(self, category):
-        return self.filter(parent = category)
+    @classmethod
+    def get_sub_categories(cls, instance):
+        return list(cls.objects.filter(parent=instance))
+
 
     def __str__(self):
         return self.name

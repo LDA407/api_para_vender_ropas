@@ -13,12 +13,10 @@ from rest_framework.generics import ListAPIView
 
 class GetItemsView(ListAPIView):
     serializer_class = CartItemSerializer
+    
     def get_queryset(self):
-        try:
-            cart = Cart.objects.select_related('user').get(user=self.request.user)
-            return cart.cartitem_set.select_related('product').order_by('product_id')
-        except Cart.DoesNotExist:
-            raise not_found({'error': 'the cart does not exist'})
+        cart = get_object_or_404(Cart, user = self.request.user)
+        return cart.cartitem_set.select_related('product').order_by('product_id')
 
 
 class AddItemView(APIView):
@@ -79,11 +77,8 @@ class GetTotalView(APIView):
 class GetItemTotalView(APIView):
 
     def get(self, request):
-        try:
-            cart =  get_object_or_404(Cart, user = request.user )
-            return success_response({'total_items': cart.total_items})
-        except Exception as error:
-            return server_error({'error': f'something went wrong adding intem to cart: {str(error)}'})
+        cart =  get_object_or_404(Cart, user = request.user )
+        return success_response({'total_items': cart.total_items})
 
 
 class UpdateItemView(APIView):
@@ -143,14 +138,18 @@ class RemoveItemView(APIView):
             cart_items = CartItem.objects.order_by('product').filter(cart=cart)
             serializer = CartItemSerializer(cart_items, many=True)
             return success_response({'cart': serializer.data})
+
         except Exception as error:
-            return server_error({'error': f'Algo salió mal al eliminar el elemento del carrito: {str(error)}'})
+            return server_error({
+                'result': 'error',
+                'message': f'{str(error)}'
+            })
 
 
 class EmptyCartView(APIView):
     def delete(self, request, format=None):
         try:
-            cart = Cart.objects.get(user = request.user )
+            cart = get_object_or_404( Cart, user = request.user )
             CartItem.objects.filter( cart = cart ).delete()
             cart.total_items = 0 
             cart.save()
@@ -174,11 +173,11 @@ class SynchCartView(APIView):
                     return bad_request({'error':'product id must be an integer'})
                 
                 cart_items = get_object_or_404(CartItem, cart = cart )
-                product = Product.objects.get(id = product_id)
+                product = get_object_or_404(Product, id = product_id)
                 quantity = product.quantity
 
                 if CartItem.objects.filter(cart = cart, product = product ).exists():
-                    item = CartItem.objects.get( cart = cart, product = product )
+                    item = get_object_or_404(CartItem, cart = cart, product = product )
                     count = item.count
                     try:
                         # actualiza el item del carrito
