@@ -13,8 +13,7 @@ environ.Env.read_env()
 BT_MERCHANT_ID = env('BT_MERCHANT_ID')
 BT_PUBLIC_KEY = env('BT_PUBLIC_KEY')
 BT_PRIVATE_KEY = env('BT_PRIVATE_KEY')
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
+
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env('SECRET_KEY')
@@ -39,7 +38,6 @@ ECOMMERCE_APPS = [
     'apps.shopping_cart',
     'apps.product',
     'apps.payment',
-    'apps.shipping',
 ]
 
 
@@ -111,12 +109,6 @@ TEMPLATES = [
 # IMPORT_EXPORT_USE_TRANSACTIONS = True
 
 ASGI_APPLICATION = 'config.asgi.application'
-# comando para ejecutar la app
-# daphne config.asgi:application
-# pip install -U 'Twisted[tls, http2]'
-# requiere un certificado sll
-#  daphne -e ssl:443:privateKey=Key.pem:certKey=crt.pem config.asgi:application
-
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 

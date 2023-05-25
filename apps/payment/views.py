@@ -8,21 +8,11 @@ from rest_framework import permissions, generics
 from rest_framework.views import APIView
 
 from apps.product.models import Product
-from apps.shipping.models import Shipping
 # from django.db.models import Q
 from apps.shopping_cart.models import Cart, CartItem
 from utils.responses import *
 
-from .models import (
-    FixedPriceCoupon,
-    FixedPriceCouponSerializer,
-    Order,
-    OrderItem,
-    OrderSerializer,
-    OrderItemSerializer,
-    PorcentageCoupon,
-    PorcentageCouponSerializer
-)
+from .models import *
 
 # def catalog(request):
 # site_name = "Modern Musician"
@@ -53,6 +43,17 @@ gateway = braintree.BraintreeGateway(
         private_key=settings.BT_PRIVATE_KEY
     )
 )
+
+
+class GetShippingView(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def get(self, format=None):
+        shipping_options = Shipping.objects.order_by('price').all()
+        if shipping_options:
+            shipping_options = ShippingSerializer(shipping_options, many=True)
+            return success_response(shipping_options.data)
+        return not_found({'error': 'no shippings options available'})
 
 
 class ListOrderView(generics.ListAPIView):
@@ -160,12 +161,12 @@ class GetPaymentTotalView(APIView):
             total_amount = round(total_amount, 2)
 
             return success_response({
-                'original_price'        : f'{original_price:.2f}',
-                'total_after_coupon'    : f'{total_after_coupon:.2f}',
-                'total_amount'          : f'{total_amount:.2f}',
-                'total_compare_amount'  : f'{total_compare_amount:.2f}',
-                # 'estimated_tax'         : f'{estimated_tax:.2f}',
-                'shipping_cost'         : f'{shipping_cost:.2f}',
+                'original_price' : f'{original_price:.2f}',
+                'total_after_coupon' : f'{total_after_coupon:.2f}',
+                'total_amount' : f'{total_amount:.2f}',
+                'total_compare_amount' : f'{total_compare_amount:.2f}',
+                # 'estimated_tax' : f'{estimated_tax:.2f}',
+                'shipping_cost' : f'{shipping_cost:.2f}',
             })
         
         except (Cart.DoesNotExist, Shipping.DoesNotExist) as error:
@@ -186,23 +187,23 @@ class ProcessPaymentView(APIView):
         _PRODUCTS = Product.objects.all()
         _CART_ITEMS = CartItem.objects.all()
         
-        user			= request.user
-        data			= request.data
-        tax				= 0.24
-        nonce			= data.get('nonce')
-        coupon_name	    = str(data.get('coupon_name'))
-        shipping_id		= str(data.get('shipping_id'))
-        full_name		= data.get('full_name')
-        address_line_1	= data.get('address_line_1')
-        address_line_2	= data.get('address_line_2')
-        city			= data.get('city')
-        province		= data.get('province')
-        zip_code		= data.get('zip_code')
-        country			= data.get('country')
-        telephone		= data.get('telephone')
+        user = request.user
+        data = request.data
+        tax = 0.24
+        nonce = data.get('nonce')
+        coupon_name = str(data.get('coupon_name'))
+        shipping_id = str(data.get('shipping_id'))
+        full_name = data.get('full_name')
+        address_line_1 = data.get('address_line_1')
+        address_line_2 = data.get('address_line_2')
+        city = data.get('city')
+        province = data.get('province')
+        zip_code = data.get('zip_code')
+        country = data.get('country')
+        telephone = data.get('telephone')
 
-        cart 			= _CARTS.filter(user = user)
-        cart_items      = _CART_ITEMS.filter(cart=cart).first()
+        cart = _CARTS.filter(user = user)
+        cart_items = _CART_ITEMS.filter(cart=cart).first()
 
         for cart_item in cart_items:
             not_available = cart_item.product_not_available()
@@ -226,10 +227,10 @@ class ProcessPaymentView(APIView):
         
 
         total_amount += (total_amount * tax)
-        shipping 		= get_object_or_404(_PRODUCTS, id=shipping_id)
-        shipping_name 	= shipping.name
-        shipping_time 	= shipping.time_to_delivery
-        shipping_price	= shipping.price
+        shipping = get_object_or_404(_PRODUCTS, id=shipping_id)
+        shipping_name = shipping.name
+        shipping_time = shipping.time_to_delivery
+        shipping_price = shipping.price
 
         total_amount += float(shipping_price)
         total_amount = round(total_amount, 2)
@@ -256,20 +257,20 @@ class ProcessPaymentView(APIView):
                 )
             try:
                 order = Order.objects.add(
-                    user              = user,
-                    transaction_id    = new_transaction.transaction.id,
-                    amount            = total_amount,
-                    full_name         = full_name,
-                    address_line_1    = address_line_1,
-                    address_line_2    = address_line_2,
-                    city              = city,
-                    province          = province,
-                    zip_code          = zip_code,
-                    country           = country,
-                    telephone         = telephone,
-                    shipping_name     = shipping_name,
-                    shipping_time     = shipping_time,
-                    shipping_price    = float(shipping_price)
+                    user = user,
+                    transaction_id = new_transaction.transaction.id,
+                    amount = total_amount,
+                    full_name = full_name,
+                    address_line_1 = address_line_1,
+                    address_line_2 = address_line_2,
+                    city = city,
+                    province = province,
+                    zip_code = zip_code,
+                    country = country,
+                    telephone = telephone,
+                    shipping_name = shipping_name,
+                    shipping_time = shipping_time,
+                    shipping_price = float(shipping_price)
                 )
             except Exception as error:
                 return server_error(f"Error! The transaction succeded but failed to create the order: {str(error)}")

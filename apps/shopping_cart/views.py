@@ -1,15 +1,15 @@
-from django.shortcuts import get_object_or_404, get_list_or_404
+from django.db import IntegrityError
+from django.shortcuts import get_list_or_404, get_object_or_404
+from rest_framework.generics import ListAPIView
 from rest_framework.views import APIView
-from .models import Cart, CartItem
+
 from apps.product.models import Product
 from apps.product.serializers import ProductSerializer
-from django.db import IntegrityError
 from utils.responses import *
 from utils.shpping_cart.serializers import *
 
+from .models import Cart, CartItem
 
-# nada de esto seria necesario con las vistas genericas
-from rest_framework.generics import ListAPIView
 
 class GetItemsView(ListAPIView):
     serializer_class = CartItemSerializer
@@ -37,21 +37,13 @@ class AddItemView(APIView):
                 return conflict_response({'error':'the product already in cart'})
 
             if int(product.quantity) > 0:
-                CartItem.objects.create(
-                    product = product,
-                    cart = cart,
-                    count = count
-                )
+                CartItem.objects.create(product = product, cart = cart, count = count)
 
-                # si el producto ya existe le suma 1 al total de items de carro
                 if cart._item_exists(product):
-                    Cart.objects.filter(user = user).update(
-                        total_items =+ 1
-                    )
+                    Cart.objects.filter(user = user).update(total_items =+ 1)
                     cart_items = CartItem.objects.order_by('product').filter(cart = cart)
-                    serializer = CartItemSerializer(cart_items, many=True)
-                    
-                    return created_response({'cart': serializer.data})
+                    serializer = CartItemSerializer(cart_items, many = True)
+                    return created_response(serializer.data)
                 return success_response({'error': 'no enough of this item in stock'})
         # except IntegrityError:
         #     return Response({'error': 'no enough of this item in stock'}, status=status.HTTP_200_OK)
@@ -101,14 +93,10 @@ class UpdateItemView(APIView):
                 return not_found({'error':'El producto no esta en tu carrito'})
 
             if count <= product.quantity:
-                CartItem.objects.filter(
-                    cart = cart,
-                    product = product
-                ).update(count=count)
-
-                cart_items = CartItem.objects.order_by('product').filter(cart=cart)
-                serializer = CartItemSerializer(cart_items, many=True)
-                return created_response({'cart': serializer.data})
+                CartItem.objects.filter(cart = cart, product = product).update(count = count)
+                cart_items = CartItem.objects.order_by('product').filter(cart = cart)
+                serializer = CartItemSerializer(cart_items, many = True)
+                return created_response(serializer.data)
             return success_response({'error': 'no enough of this item in stock'})
         except Exception as error:
             return server_error({'error': f'something went wrong adding item to cart: {str(error)}'})
@@ -137,13 +125,10 @@ class RemoveItemView(APIView):
 
             cart_items = CartItem.objects.order_by('product').filter(cart=cart)
             serializer = CartItemSerializer(cart_items, many=True)
-            return success_response({'cart': serializer.data})
+            return success_response(serializer.data)
 
         except Exception as error:
-            return server_error({
-                'result': 'error',
-                'message': f'{str(error)}'
-            })
+            return server_error({'result': 'error','message': f'{str(error)}'})
 
 
 class EmptyCartView(APIView):

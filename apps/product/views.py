@@ -1,9 +1,11 @@
-from django.shortcuts import get_object_or_404, get_list_or_404
+from django.shortcuts import get_list_or_404, get_object_or_404
+from rest_framework import filters, generics, pagination, permissions
 from rest_framework.views import APIView
-from rest_framework import permissions, generics, filters, generics, pagination
+
+from utils.responses import *
+
 from .models import *
 from .serializers import *
-from utils.responses import *
 
 
 class ListCategoriesView(APIView):

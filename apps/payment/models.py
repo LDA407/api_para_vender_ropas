@@ -1,16 +1,15 @@
 import uuid
-from django.db import models
-from apps.shipping.models import Shipping
-from apps.product.models import Product
 from datetime import datetime
+
 from django.contrib.auth import get_user_model
-from utils.countries import Countries 
+from django.db import models
 from rest_framework import serializers
+
+from apps.product.models import Product
+from utils.countries import Countries
 
 
 User = get_user_model()
-
-from django.db import models
 
 
 class Order(models.Model):
@@ -20,6 +19,7 @@ class Order(models.Model):
 		SHIPPING = 'shipping'
 		DELIVEDER = 'delivered'
 		CANCELLED = 'cancelled'
+
 	# id = models.UUIDField(default=uuid.uuid4, primary_key=True)
 	status = models.CharField(max_length = 50, choices = OrderStatus.choices,default = OrderStatus.NOT_PROCESSED)
 	user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -110,3 +110,19 @@ class PorcentageCouponSerializer(serializers.ModelSerializer):
 
     def __str__(self) -> str:
         return super().__str__()
+
+
+class Shipping(models.Model):
+	class Meta:
+		verbose_name = 'Shipping'
+		verbose_name_plural = 'Shipping'
+	
+	name = models.CharField(max_length=225, unique=True)
+	time_to_delivery = models.CharField(max_length=225)
+	price = models.DecimalField(max_digits=5, decimal_places=2)
+
+
+class ShippingSerializer(serializers.ModelSerializer):
+	class Meta:
+		model= Shipping
+		fields='__all__'
