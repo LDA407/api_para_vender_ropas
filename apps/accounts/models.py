@@ -2,8 +2,9 @@ import os
 from datetime import datetime
 
 from django.conf import settings
-from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
-                                        PermissionsMixin)
+from django.contrib.auth.models import (
+    AbstractBaseUser, BaseUserManager,
+    PermissionsMixin)
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -22,9 +23,6 @@ class AccountManegers(BaseUserManager):
         user = self.model(email=self.normalize_email(email), **extra_fields)
         user.set_password(password)
         user.save()
-
-        shop_cart = Cart.objects.create(user = user)
-        shop_cart.save()
 
         return user
     
@@ -45,22 +43,21 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
     objects = AccountManegers()
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = [ 'full_name']
+    REQUIRED_FIELDS = ['full_name']
 
     def __str__(self):
         return self.email
     
     class Meta:
         db_table = 'accounts'
-        # managed = True
-        # verbose_name = 'ModelName'
-        # verbose_name_plural = 'ModelNames'
 
 
-# @receiver(post_save, sender=UserAccount)
-# def set_user_type(sender, instance, **kwargs):
-#     if kwargs.get('created', False):
-#         UserProfile.objects.create(user=instance)
+@receiver(post_save, sender=UserAccount)
+def set_user_type(sender, instance, **kwargs):
+    if kwargs.get('created', False):
+        # UserProfile.objects.create(user=instance)
+        WishList.objects.create(user = instance)
+        Cart.objects.create(user=instance)
 
 
 # class UserProfile(models.Model):
@@ -94,6 +91,10 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
 class WishList(models.Model):
     user = models.OneToOneField(UserAccount, on_delete=models.CASCADE)
     total_items = models.IntegerField(default=0)
+
+    @classmethod
+    def get_wish_list_items(cls):
+        return WishListItem.objects.filter(wishlist=cls)
 
     def __str__(self) -> str:
         return super().__str__()

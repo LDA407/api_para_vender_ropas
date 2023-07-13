@@ -1,5 +1,20 @@
+# -*- coding: utf-8 -*-
+
 from rest_framework import serializers
 from .models import *
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    children = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Category
+        fields = ('id', 'name', 'parent', 'children')
+        read_only_fields = ('id',)
+    
+    def get_children(self, obj):
+        serializer = CategorySerializer(obj.get_children(), many=True)
+        return serializer.data
 
 
 # class TagSerializer(serializers.ModelSerializer):
@@ -9,11 +24,11 @@ from .models import *
 #         read_only_fields = ('id',)
 
 
-# class TaxSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Tax
-#         fields = (,)
-#         read_only_fields = ('id',)
+class TaxSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tax
+        fields = ('id', 'name', 'tax_percentage')
+        read_only_fields = ('id',)
 
 
 # class DiscountSerializer(serializers.ModelSerializer):
@@ -23,46 +38,95 @@ from .models import *
 #         read_only_fields = ('id',)
 
 
-# class GaleryProductSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = GaleryProduct
-#         fields = (,)
-#         read_only_fields = ('id',)
+class GaleryProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GaleryProduct
+        fields = ('id', 'image', 'product', 'thumbnail')
+        read_only_fields = ('id',)
 
 
-# class ColorVariationSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = ColorVariation
-#         fields = (,)
-#         read_only_fields = ('id',)
+# class PublicGaleryProductSerializer(serializers.Serializer):
+#     detail = serializers.HyperlinkedIdentityField(
+#             view_name = 'product-detail',
+#             lookup_field = 'pk',
+#             context = {'request': request},
+#             read_only=True
+#     )
+#     image = serializers.CharField(read_only=True)
 
 
-# class SizeVariationSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = SizeVariation
-#         fields = (,)
-#         read_only_fields = ('id',)
+class ColorVariationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ColorVariation
+        fields = ('name',)
+        read_only_fields = ('id',)
+
+
+class SizeVariationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SizeVariation
+        fields = ('name',)
+        read_only_fields = ('id',)
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    # photo = serializers.ImageField(max_length=None, use_url=True)
+    gallery = serializers.SerializerMethodField(read_only = True)
+    thumbnail = serializers.SerializerMethodField()
+    taxes = serializers.SerializerMethodField(read_only = True)
+    discount = serializers.SerializerMethodField(read_only = True)
+    colors = serializers.SerializerMethodField(read_only = True)
+    sizes = serializers.SerializerMethodField(read_only = True)
+    
     class Meta:
         model = Product
         fields = [
-            'id', 'name', 'description', 'price',
-            'category', 'quantity', 'sold',
-            'galery', 'date_created',
-            # 'get_image',
+            'id',
+            'name',
+            'description',
+            'colors',
+            'sizes',
+            'price',
+            'category',
+            'quantity',
+            'sold',
+            'date_created',
+            'thumbnail',
+            'taxes',
+            'discount',
+            'gallery'
         ]
         # read_only_fields = ('id',)
-    
-    # def create(self, validated_data):
-    #     product = Product.objects.create(**validated_data)
-    #     return product
 
-    # def update(self, instance, validated_data):
-    #     instance.email = validated_data.get('email', instance.email)
-    #     instance.content = validated_data.get('content', instance.content)
-    #     instance.created = validated_data.get('created', instance.created)
-    #     instance.save()
-    #     return instance
+    def get_colors(self, obj):
+        serializer = ColorVariationSerializer(obj.get_colors(), many = True)
+        return serializer.data
+
+    def get_sizes(self, obj):
+        serializer = SizeVariationSerializer(obj.get_sizes(), many = True)
+        return serializer.data
+    
+    def get_gallery(self, obj):
+        serializer = GaleryProductSerializer(obj.get_gallery(), many = True)
+        return serializer.data
+    
+    def get_thumbnail(self, obj):
+        gallery = GaleryProduct.objects.filter(product_id = obj.id)
+        if len(gallery) > 0:
+            thumbnail = f"http://127.0.0.1:8000/media/{gallery[0].image}"
+            return thumbnail
+        return ''
+
+    def get_taxes(self, obj):
+        serializer = TaxSerializer(obj.get_taxes(), many = True)
+        return serializer.data
+
+    def get_discount(self, obj):
+        str_discount = obj.get_discount()
+        return str(str_discount)
+
+    # def get_other_products(self, obj):
+    #     user = obj
+    #     my_products_qs = obj.product_set.all()[:5]
+    #     return PublicGaleryProductSerializer(my_products_qs, many=True, context=self.context).data
+
+

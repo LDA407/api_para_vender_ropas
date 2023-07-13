@@ -1,22 +1,40 @@
 from django.db import IntegrityError
 from django.shortcuts import get_list_or_404, get_object_or_404
-from rest_framework.generics import ListAPIView
+from rest_framework import generics
 from rest_framework.views import APIView
 
 from apps.product.models import Product
 from apps.product.serializers import ProductSerializer
 from utils.responses import *
-from utils.shpping_cart.serializers import *
+from .serializers import *
 
 from .models import Cart, CartItem
 
 
-class GetItemsView(ListAPIView):
-    serializer_class = CartItemSerializer
+class GetItemsView(generics.ListAPIView):
+    serializer_class = CartSerializer
     
     def get_queryset(self):
-        cart = get_object_or_404(Cart, user = self.request.user)
-        return cart.cartitem_set.select_related('product').order_by('product_id')
+        return self.serializer_class.Meta.model.objects.filter(user = self.request.user)
+
+
+class CartItemListCreate(generics.ListCreateAPIView):
+    serializer_class = CartItemSerializer
+
+    def get_queryset(self):
+        queryset = self.serializer_class.Meta.model.objects.filter(user = self.request.user)
+        return queryset
+
+    def perform_create(self, serializer):
+        print(self.kwargs)
+        pass
+
+
+class CartItemveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = CartItem.objects.all()
+    serializer_class = CartItemSerializer
+    lookup_field = "id"
+
 
 
 class AddItemView(APIView):
@@ -114,7 +132,7 @@ class RemoveItemView(APIView):
         try:
             cart = get_object_or_404(Cart, user=user)
             product = get_object_or_404(Product, id=product_id)
-
+ 
             if not cart._item_exists(product):
                 return not_found({'error': 'El producto no está en tu carrito'})
 
@@ -188,3 +206,24 @@ class SynchCartView(APIView):
                 return created_response({'success': 'cart Synchronized'})
         except Exception as error:
             return server_error({'error': f'something went wrong adding intem to cart: {error}'})
+
+
+# class CartItemView(
+#         mixins.ListModelMixin,
+#         mixins.RetrieveModelMixin,
+#         mixins.CreateModelMixin,
+#         generics.GenericAPIView
+#     ):
+#     serializer_class = CartSerializer
+#     queryset = serializer_class.Meta.model.objects.all()
+
+#     def get(self, request, *args, **kwargs):
+#         id = self.kwargs.get('id')
+
+#         if id is not None:
+#             return self.retrieve(request, *args, **kwargs)
+
+#         return self.list(request, *args, **kwargs)
+
+#     def post(self, request, *args, **kwargs):
+#         return self.create(request, *args, **kwargs)

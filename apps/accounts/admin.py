@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth import get_user_model
 
-from . import models
+from .models import *
 
 User = get_user_model()
 
@@ -13,3 +13,6 @@ class UserAdmin(admin.ModelAdmin):
     list_per_page = 25
 
 admin.site.register(User, UserAdmin)
+admin.site.register(WishList)
+admin.site.register(WishListItem)
+admin.site.register(Review)

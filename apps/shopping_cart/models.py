@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from django.db import models
 from decimal import Decimal
 from django.conf import settings
@@ -14,6 +15,12 @@ class Cart(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     total_items = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def get_cart_items(self):
+        return self.cartitem_set.all()
+    
+    # def get_total_items(self):
+    #     return self.cartitem_set.all().count
 
     def _item_exists(self, product):
         return self.cartitem_set.filter(product = product).exists()

@@ -1,8 +1,9 @@
 from django.shortcuts import get_list_or_404, get_object_or_404
 from apps.product.models import Product
 from apps.product.serializers import ProductSerializer
-from rest_framework import permissions
+from rest_framework import permissions, viewsets, generics, filters
 from rest_framework.views import APIView
+from rest_framework import generics
 from apps.shopping_cart.models import Cart, CartItem
 
 from utils.responses import *
@@ -37,67 +38,69 @@ from .serializers import *
 #             return server_error({'error': f'{e}'})
 
 
-class GetItemsView(APIView):
-    permission_classes = (permissions.AllowAny,)
+class WishListItemCreateView(generics.ListCreateAPIView):
+    serializer_class = WishListItemSerializer
 
-    def get(self, request, format=None):
-        try:
-            wishlist = get_object_or_404(WishList, user = self.request.user)
-            wishlist_items = get_object_or_404(WishListItem, wishlist=wishlist)
-            result = WishListItemSerializer(wishlist_items, many = True)
-            return success_response({'wishlist': result})
-        except Exception as error:
-            return server_error({'error': f'{error}'})
+    def get_queryset(self):
+        # queryset = self.serializer_class.Meta.model.objects.filter(user_id = self.request.user)
+        queryset = self.serializer_class.Meta.model.objects.all()
+        return queryset
+
+    # def perform_create(self, serializer):
+    #     print(self.request.data)
+    #     print(serializer.validated_data)
+        # product = get_object_or_404(Product, id = product_id)
+        # serializer.save(user = self.request.user, product = self.request.data["product"])
 
 
-class AddItemView(APIView):
+# class AddItemView(APIView):
     
-    def post(self, request, format=None):
-        user = self.request.user
-        data = self.request.data
+# 	def post(self, request, format=None):
+# 		user = self.request.user
+# 		data = self.request.data
 
-        try:
-            product_id = int(data['prduct_id'])
-        except ValueError:
-            return bad_request({'error': 'The ID must be an integer'})
+# 		try:
+# 			product_id = int(data['prduct_id'])
+# 		except ValueError:
+# 			return bad_request({'error': 'The ID must be an integer'})
     
-        try:
-            product = get_object_or_404(Product, id = product_id)
-            wishlist = get_object_or_404(WishList, user=user)
+# 		try:
+# 			product = get_object_or_404(Product, id = product_id)
+# 			wishlist = get_object_or_404(WishList, user=user)
+# 			wish_list_items = wishlist.get_wish_list_items()
 
-            if WishListItem.objects.filter(wishlist=wishlist, product=product).exists():
-                return conflict_response({'error':'item already in wishlist'})
+# 			if wish_list_items[product]:
+# 				return conflict_response({'error':'item already in wishlist'})
+# 			else:
+# 				WishListItem.objects.filter(user=user, wishlist=wishlist).update(product=product)
+# 				wishlist.total_items =+ 1
+# 				wishlist.save()
+
+# 			cart = get_object_or_404(Cart, user = user)
+# 			if cart._items_exists(product) :
+# 				CartItem.objects.filter(cart=cart, product=product).delete()
+# 			else:
+# 				cart.total_items =- 1
+# 				cart.save()
             
-            WishList.objects.create(
-                user = user, wishlist = wishlist
-            )
+# 			# result = []
+# 			# for item in wish_list_items:
+# 			# 	product = get_object_or_404(Product, id = item.product.id)
+# 			# 	product = ProductSerializer(product)
+# 			# 	result.append({
+# 			# 		'id': item.id,
+# 			# 		'product': product.data,
+# 			# 	})
 
-            if WishListItem.objects.filter(wishlist=wishlist, product=product).exists():
-                WishList.objects.filter(user=user).update(total_items =+ 1)
-            
-            cart = get_object_or_404(Cart, user = user)
+# 			return success_response(WishListItemSerializer(wish_list_items, many=True).data)
+# 		except Exception as error:
+# 			return server_error({'error': f'{error}'})
 
-            cart_exists = cart._items_exists(cart, product) 
 
-            if cart_exists:
-                CartItem.objects.filter(cart=cart, product=product).delete()
-            
-                if not cart_exists:
-                    Cart.objects.filter(user=user).update( total_items =-1 )
-            
-            wishlist_items = WishListItem.objects.filter(wishlist=wishlist)
-            result = []
-            for item in wishlist_items:
-                product = get_object_or_404(Product, id = item.product.id)
-                product = ProductSerializer(product)
-                result.append({
-                    'id': item.id,
-                    'product': product.data,
-                })
-
-            return success_response({'wishlist': result})
-        except Exception as error:
-            return server_error({'error': f'{error}'})
+class WishListItemDestroyView(generics.DestroyAPIView):
+    queryset = WishListItem.objects.all()
+    serializer_class = WishListItemSerializer
+    lookup_field = "id"
 
 
 class GetItemTotalView(APIView):
@@ -113,126 +116,23 @@ class GetItemTotalView(APIView):
             return server_error({'error': f'something went wrong adding intem to cart: {str(error)}'})
 
 
-class RemoveItemView(APIView):
-    def delete(self, request, format=None):
-        user = request.user
-        data = request.data
+class ReviewListCreateView(generics.ListCreateAPIView):
+    serializer_class = ReviewSerializer
+    queryset = Review.objects.all()
+    filter_backends = [filters.SearchFilter,]
+    search_fields = ['product__id']
 
-        try:
-            product_id = int(data.get('product_id'))
-        except ValueError:
-            return bad_request({'error': 'El id del producto debe ser un entero'})
+    def perform_create(self, serializer):
+        print(self.request.data)
 
-        try:
-
-            product = get_object_or_404(Product, id = product_id)
-            wishlist = get_object_or_404(WishList, user=user)
-
-            wishlist_exists = WishListItem.objects.filter(wishlist=wishlist, product=product).exists()
-
-            if not wishlist_exists:
-                return not_found({'error':'this product not in your wishlist'})
-            
-            WishListItem.objects.filter(
-                wishlist = wishlist, product = product
-            ).delete()
-
-            if not wishlist_exists:
-                WishList.objects.filter(user=user).update(total_items =- 1)
-            
-            wishlist_items = WishListItem.objects.filter(wishlist=wishlist)
-            
-            result = []
-            if WishListItem.objects.filter(wishlist=wishlist).exists():
-                for item in wishlist_items:
-                    product = Product.objects.get(id=item.product.id)
-                    product = ProductSerializer(product)
-                    result.append({
-                        'id': item.id,
-                        'product': product.data,
-                    })
-                return success_response({'cart': result})
-
-        except Exception as error:
-            return server_error({'error': f'Algo salió mal al eliminar el elemento del carrito: {str(error)}'})
+        # product = get_object_or_404(Product, id = product_id)
+        # serializer.save(user = self.request.user, product = self.request.data["product"])
 
 
-class GetReview(APIView):
-    permission_classes = (permissions.AllowAny,)
-    
-    def get(self, request, productId, format=None):
-        try:
-            product = get_object_or_404(Product, id = productId)
-            reviews = get_list_or_404(Review, product=product)
-            data = list(ReviewSerializer(reviews, many = True).data)
-            return success_response(data)
-        
-        except Exception as error:
-            return server_error({'error': f'{error}'})
-
-
-class CreateReview(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-    def post(self, request, productId, format=None):
-        user = request.user
-        data = request.data
-        product = get_object_or_404(Product, id = productId)
-
-        if Review.objects.filter(user=user, product=product).exists():
-            return conflict_response({'error': f'A review for this product has already been created'})
-
-        serializer = ReviewSerializer(data=data)
-        if serializer.is_valid(raise_exception=True):
-            # serializer.save(user=user, product=product)
-            review = serializer.data
-
-            reviews = Review.objects.order_by('-created_at').filter(product=product)
-            results = ReviewSerializer(reviews, many=True).data
-            return created_response({'review': review, 'reviews': results})
-        return bad_request(serializer.errors)
-
-
-class UpdateReview(APIView):
-    def put(self, request, productId, format=None):
-        user = self.request.user
-        data = self.request.data
-
-        try: rating = float(data.get('rating'))
-        except ValueError:
-            return bad_request({'error': 'Rating must be a decimal value'})
-        # ====================
-
-        try: comment = str(data.get('comment'))
-        except ValueError:
-            return bad_request({'error': 'Must pass a comment when creating review'})
-        # ====================
-        
-        try:
-            product = get_object_or_404(Product, id = productId)
-            if not Review.objects.filter(user = user, product = product).exists():
-                return conflict_response({'error': 'The review for this product does not exist'})
-            
-            serializer = ReviewSerializer(rating = rating, comment = comment)
-            if serializer.is_valid():
-                serializer.save(user=user, product=product)
-                review = serializer.data
-                reviews = Review.objects.order_by('-created_at').filter(product=product)
-                results = ReviewSerializer(reviews, many=True).data
-                return created_response({'review': review, 'reviews': results})
-            return not_content({'error': "no reviews"})
-        except Exception as error:
-            return server_error({'error': f'{error}'})
-
-
-class DeleteReview(APIView):
-    def delete(self, request, productId, format=None):
-        product = get_object_or_404(Product, id = productId)
-        review = get_object_or_404(Review, user = self.request.user, product=product)
-        review.delete()
-
-        reviews = Review.objects.order_by('-created_at').filter(product = product)
-        data = ReviewSerializer(reviews, many = True).data
-        return success_response(data)
+class ReviewRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+    lookup_field = "id"
 
 
 class FilterReview(APIView):

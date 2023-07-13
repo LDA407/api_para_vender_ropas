@@ -5,7 +5,7 @@ from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-print(BASE_DIR)
+
 
 env = environ.Env()
 environ.Env.read_env()
@@ -191,7 +191,13 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 12
+    'PAGE_SIZE': 12,
+    # 'DEFAULT_RENDERER_CLASSES': (
+    #     'rest_framework.renderers.JSONRenderer',
+    # ),
+    # 'DEFAULT_PARSER_CLASSES': (
+    #     'rest_framework.parsers.JSONParser',
+    # )
 }
 
 
@@ -241,6 +247,15 @@ DJOSER = {
 }
 
 
+# import cloudinary
+
+# cloudinary.config( 
+#     cloud_name = env('CLOUDINARY_CLOUD_NAME'), 
+#     api_key = env('CLOUDINARY_PUBLIC_KEY') ,
+#     api_secret = env('CLOUDINARY_SECRET_KEY'),
+#     secure = env('CLOUDINARY_SECURE'),
+# )
+
 AUTH_USER_MODEL="accounts.UserAccount"
 
 
@@ -255,11 +270,13 @@ if not DEBUG:
     EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
     EMAIL_PORT = env('EMAIL_PORT')
     EMAIL_USE_TLS = env('EMAIL_USE_TLS')
+
     CSRF_COOKIE_SECURE = True
     SESSION_COOKIE_SECURE = True
     # CSRF_COOKIE_HTTPONLY = True
     # UPGRADE_INSECURE_REQUESTS = True
     # HTTP_UPGRADE_INSECURE_REQUESTS = True
+
     SECURE_SSL_REDIRECT = True
     SECURE_HSTS_SECONDS = 31536000
     SECURE_BROWSER_XSS_FILTER = True

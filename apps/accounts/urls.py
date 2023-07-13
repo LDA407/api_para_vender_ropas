@@ -1,16 +1,18 @@
 from django.urls import path, re_path
 from .views import *
+# from rest_framework import routers
 
+# router = routers.SimpleRouter()
+# router.register(r'wishlist', WishListItemCreateView, basename='wishlist')
+# print(router.urls)
+# router.register(r'accounts', AccountViewSet)
+# urlpatterns = router.urls
 app_name='accounts'
 
 urlpatterns = [
-	path('wishlist/get_items', GetItemsView.as_view()),
-	path('wishlist/add_item', AddItemView.as_view()),
-	path('wishlist/get_items_total', GetItemTotalView.as_view()),
-	path('wishlist/remove_item', RemoveItemView.as_view()),
-	path('reviews/<int:productId>', GetReview.as_view()),
-    path('reviews/add/<int:productId>', CreateReview.as_view()),
-    path('reviews/update/', UpdateReview.as_view()),
-    path('reviews/delete/<int:productId>', DeleteReview.as_view()),
-    path('reviews/filter/<int:productId>', FilterReview.as_view()),
+	path('wishlist', WishListItemCreateView.as_view()),
+	re_path(r'^wishlist/delete/(?P<id>[^/]+)/$', WishListItemDestroyView.as_view()),
+	re_path(r'reviews$', ReviewListCreateView.as_view()),
+    re_path(r'^reviews/updateOrDelete/(?P<id>[^/]+)/$', ReviewRetrieveUpdateDestroyView.as_view()),
+    re_path(r'^reviews/filter/(?P<productId>[^/]+)/$', FilterReview.as_view()),
 ]

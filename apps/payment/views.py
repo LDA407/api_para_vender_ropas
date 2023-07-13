@@ -45,15 +45,11 @@ gateway = braintree.BraintreeGateway(
 )
 
 
-class GetShippingView(APIView):
+class GetShippingView(generics.ListAPIView):
+    queryset = Shipping.objects.order_by('price').all()
+    serializer_class = ShippingSerializer
     permission_classes = (permissions.AllowAny,)
-
-    def get(self, format=None):
-        shipping_options = Shipping.objects.order_by('price').all()
-        if shipping_options:
-            shipping_options = ShippingSerializer(shipping_options, many=True)
-            return success_response(shipping_options.data)
-        return not_found({'error': 'no shippings options available'})
+    ordering = ['-date_issued', 'price']
 
 
 class ListOrderView(generics.ListAPIView):
@@ -72,7 +68,7 @@ class OrderDetailView(generics.RetrieveAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        return self.queryset.filter(user=user)
+        return self.queryset.filter(user = user)
 
 
 class CheckCouponView(APIView):
@@ -84,6 +80,7 @@ class CheckCouponView(APIView):
             if FixedPriceCoupon.objects.filter(name=coupon_name).exists():
                 coupon = FixedPriceCoupon.objects.get(name=coupon_name)
                 coupon = FixedPriceCouponSerializer(coupon)
+            
             elif PorcentageCoupon.objects.filter(name=coupon_name).exists():
                 coupon = PorcentageCoupon.objects.get(name=coupon_name)
                 coupon = PorcentageCouponSerializer(coupon)
