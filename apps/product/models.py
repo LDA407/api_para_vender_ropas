@@ -6,16 +6,6 @@ from django.conf import settings
 from django.db import models
 from django.urls import reverse
 
-
-class ProductManager(models.Manager):
-
-    def search_query(self, search_query):
-        return self.filter(
-            models.Q(description__icontains=search_query) |
-            models.Q(name__icontains=search_query)
-        )
-
-
 class Tag(models.Model):
     class Meta:
         db_table = "tag"
@@ -116,9 +106,6 @@ class Product(models.Model):
     available_colors = models.ManyToManyField(ColorVariation, blank=True)
     available_sizes = models.ManyToManyField(SizeVariation, blank=True)
     date_created = models.DateTimeField(default=datetime.now)
-
-    objects = models.Manager()
-    products = ProductManager()
 
     def get_discount(self):
         discount_set = Discount.objects.filter(is_active = True)
