@@ -17,32 +17,32 @@ class CategorySerializer(serializers.ModelSerializer):
         return serializer.data
 
 
-# class TagSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Tag
-#         fields = (,)
-#         read_only_fields = ('id',)
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = '__all__'
+        read_only_fields = ('id',)
 
 
 class TaxSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tax
         fields = ('id', 'name', 'tax_percentage')
-        read_only_fields = ('id',)
+        read_only_fields = ('id', 'products')
 
 
-# class DiscountSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Discount
-#         fields = (,)
-#         read_only_fields = ('id',)
+class DiscountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Discount
+        fields = '__all__'
+        read_only_fields = ('id', 'products')
 
 
 class GaleryProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = GaleryProduct
         fields = ('id', 'image', 'product', 'thumbnail')
-        read_only_fields = ('id',)
+        read_only_fields = ('id', 'product', 'thumbnail')
 
 
 # class PublicGaleryProductSerializer(serializers.Serializer):
@@ -76,6 +76,18 @@ class ProductSerializer(serializers.ModelSerializer):
     discount = serializers.SerializerMethodField(read_only = True)
     colors = serializers.SerializerMethodField(read_only = True)
     sizes = serializers.SerializerMethodField(read_only = True)
+    # galerias = serializers.PrimaryKeyRelatedField(
+	# 	many=True,
+	# 	queryset=GaleryProduct.objects.all()
+	# )
+	# Tag = serializers.PrimaryKeyRelatedField(
+	# 	many=True,
+	# 	queryset=Tag.objects.all()
+	# )
+    # detail = serializers.HyperlinkedIdentityField(
+    #     view_name = 'detail',
+    #     lookup_field = 'id'
+    # )
     
     class Meta:
         model = Product
@@ -123,10 +135,4 @@ class ProductSerializer(serializers.ModelSerializer):
     def get_discount(self, obj):
         str_discount = obj.get_discount()
         return str(str_discount)
-
-    # def get_other_products(self, obj):
-    #     user = obj
-    #     my_products_qs = obj.product_set.all()[:5]
-    #     return PublicGaleryProductSerializer(my_products_qs, many=True, context=self.context).data
-
 
