@@ -19,21 +19,6 @@ from .models import *
 # response_html = u"<html><body>Welcome to %s.</body></html>" % site_name
 # return HttpResponse(response_html)
 
-# from django.http import HttpResponseForbidden
-
-# class HttpsOnlyMixin:
-#     def dispatch(self, request, *args, **kwargs):
-#         if not request.is_secure():
-#             return HttpResponseForbidden("Error! This page can only be accessed using HTTPS.")
-
-#         if 'HTTP_X_FORWARDED_PROTO' in self.request.META and self.request.META['HTTP_X_FORWARDED_PROTO'] == 'https':
-#             self.request.is_secure = lambda: True
-
-#         if not self.request.is_secure():
-#             return not_suported_response("Insecure request. Please upgrade to HTTPS")
-
-#         return super().dispatch(request, *args, **kwargs)
-
 
 gateway = braintree.BraintreeGateway(
     braintree.Configuration(
@@ -48,17 +33,14 @@ gateway = braintree.BraintreeGateway(
 class GetShippingView(generics.ListAPIView):
     queryset = Shipping.objects.order_by('price').all()
     serializer_class = ShippingSerializer
-    permission_classes = (permissions.AllowAny,)
     ordering = ['-date_issued', 'price']
 
 
 class ListOrderView(generics.ListAPIView):
     serializer_class = OrderSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    queryset = OrderSerializer.Meta.model.objects.all()
+    # permission_classes = [permissions.IsAuthenticated]
     ordering = ['-date_issued']
-
-    def get_queryset(self):
-        return Order.objects.filter(user=self.request.user)
 
 
 class OrderDetailView(generics.RetrieveAPIView):
@@ -71,25 +53,29 @@ class OrderDetailView(generics.RetrieveAPIView):
         return self.queryset.filter(user = user)
 
 
-class CheckCouponView(APIView):
-    def get(self, request, format=None):
-        try:
-            coupon_name = request.query_params.get('coupon_name')
-            coupon = None
+class FixedPriceCouponView(generics.ListAPIView):
+    serializer_class = FixedPriceCouponSerializer
+    queryset = serializer_class.Meta.model.objects.all()
+    # permission_classes = [permissions.IsAuthenticated]
+    # coupon_name = request.query_params.get('coupon_name')
+    # ordering = ['-date_issued']
 
-            if FixedPriceCoupon.objects.filter(name=coupon_name).exists():
-                coupon = FixedPriceCoupon.objects.get(name=coupon_name)
-                coupon = FixedPriceCouponSerializer(coupon)
-            
-            elif PorcentageCoupon.objects.filter(name=coupon_name).exists():
-                coupon = PorcentageCoupon.objects.get(name=coupon_name)
-                coupon = PorcentageCouponSerializer(coupon)
 
-            if coupon:
-                return success_response({'coupon': coupon.data})
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        except Exception as e:
-            return server_error({'error': f'{str(e)}'})
+class PorcentageCouponView(generics.ListAPIView):
+    serializer_class = PorcentageCouponSerializer
+    queryset = serializer_class.Meta.model.objects.all()
+    # permission_classes = [permissions.IsAuthenticated]
+    # coupon_name = request.query_params.get('coupon_name')
+
+
+class OrderDetailView(generics.RetrieveAPIView):
+    serializer_class = OrderSerializer
+    lookup_field = 'transaction_id'
+    queryset = Order.objects.all()
+
+    def get_queryset(self):
+        user = self.request.user
+        return self.queryset.filter(user = user)
 
 
 class GenerateTokenView(APIView):
