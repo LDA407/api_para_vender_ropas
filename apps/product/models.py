@@ -129,13 +129,13 @@ class Product(models.Model):
         available_colors = self.available_colors.all()
         if available_colors:
             return available_colors
-        return ''
+        return None
 
     def get_sizes(self):
         available_sizes = self.available_sizes.all()
         if available_sizes:
             return available_sizes
-        return ''
+        return None
 
     # def get_absolute_url(self):
     #     return reverse('detail', kwargs={

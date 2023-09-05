@@ -12,5 +12,5 @@ urlpatterns = [
 	path('remove_item', RemoveItemView.as_view()),
 	path('empty_cart', EmptyCartView.as_view()),
 	path('synch_cart', SynchCartView.as_view()),
-	path('updateOrDelete/<int:id>', CartItemveUpdateDestroyView.as_view()),
+	path('updateOrDelete/<int:id>', CartItemManagementView.as_view()),
 ]

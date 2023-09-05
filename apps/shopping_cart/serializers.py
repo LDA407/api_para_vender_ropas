@@ -9,11 +9,7 @@ class CartItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CartItem
-        fields = ('id', 'count', 'product')
-
-    def create(self, validated_data):
-        user = validated_data.pop('user')
-        return self.Meta.model.objects.create(user = user, **validated_data)
+        fields = ('id', 'cart', 'count', 'product')
 
 
 class CartSerializer(serializers.ModelSerializer):
@@ -33,7 +29,8 @@ class CartSerializer(serializers.ModelSerializer):
         )
     
     def get_items(self, obj):
-        serializer = CartItemSerializer(obj.get_cart_items(), many=True)
+        request = self.context.get('request')
+        serializer = CartItemSerializer(obj.get_cart_items(), many=True, context={'request': request})
         return serializer.data
 
     def get_total(self, obj):

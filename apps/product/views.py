@@ -14,7 +14,7 @@ class BaseAttrsViewSet(
         mixins.CreateModelMixin
     ):
 	# authentication_class = (TokenAuthentication,)
-	permission_classes = (permissions.IsAuthenticated,)
+	permission_classes = (permissions.AllowAny,)
 
 	# def get_queryset(self):
 	# 	return self.queryset.filter(user=self.request.user).order_by('-name')
@@ -59,10 +59,10 @@ class ProductListView(generics.ListAPIView):
 
     def get_queryset(self):
         qs = super(ProductListView, self).get_queryset()
-        price_range = self.request.query_params.get("price_range")
-        # category_id = self.request.query_params.get("category_id")
+        query_params = self.request.query_params
 
-        if price_range is not None:
+        if 'price_range' in query_params:
+            price_range = query_params.get("price_range")
             if price_range == "More then 80":
                 return qs.filter(price__gte=80)
             else:
@@ -73,7 +73,7 @@ class ProductListView(generics.ListAPIView):
 
 class DetailProductView(generics.RetrieveAPIView):
     permission_classes = (permissions.AllowAny,)
-    serializer_class = ProductSerializer
+    serializer_class = ProductDetailSerializer
     queryset = Product.objects.all()
     lookup_field = "id"
 

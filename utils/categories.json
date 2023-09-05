@@ -1,0 +1,62 @@
+[
+    {
+        "id": 1,
+        "name": "Ropa de hombre",
+        "parent": null,
+        "children": []
+    },
+    {
+        "id": 2,
+        "name": "Joyeria",
+        "parent": null,
+        "children": []
+    },
+    {
+        "id": 3,
+        "name": "Tecnologia",
+        "parent": null,
+        "children": []
+    },
+    {
+        "id": 4,
+        "name": "Ropa de mujer",
+        "parent": null,
+        "children": []
+    },
+    {
+        "id": 5,
+        "name": "Blusas",
+        "parent": 4,
+        "children": []
+    },
+    {
+        "id": 6,
+        "name": "Camisas",
+        "parent": 1,
+        "children": []
+    },
+    {
+        "id": 7,
+        "name": "Pantalones",
+        "parent": 1,
+        "children": []
+    },
+    {
+        "id": 8,
+        "name": "Zapatos",
+        "parent": 1,
+        "children": []
+    },
+    {
+        "id": 9,
+        "name": "Zapatillas",
+        "parent": 1,
+        "children": []
+    },
+    {
+        "id": 10,
+        "name": "Ropa interior",
+        "parent": 1,
+        "children": []
+    }
+]

@@ -11,6 +11,11 @@ class Cart(models.Model):
     class Meta:
         db_table = 'shopping_cart'
         verbose_name = 'Shopping Cart'
+        # permissions = [('can_deliver_pizzas', 'Can deliver pizzas')]
+        # indexes = [
+        #     models.Index(fields=['last_name', 'first_name']),
+        #     models.Index(fields=['first_name'], name='first_name_idx'),
+        # ]
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     total_items = models.IntegerField(default=0)
@@ -19,8 +24,20 @@ class Cart(models.Model):
     def get_cart_items(self):
         return self.cartitem_set.all()
     
-    # def get_total_items(self):
-    #     return self.cartitem_set.all().count
+    def add_cart_item(self, product, count):
+        cart_item, created = CartItem.objects.get_or_create(cart=self, product=product)
+        if not created:
+            cart_item.count += count
+            cart_item.save()
+
+    def delete_cart_item(self, product):
+        CartItem.objects.filter(cart=self, product=product).delete()
+
+    def clear_cart_items(self):
+        self.cartitem_set.all().delete()
+    
+    def get_total_items(self):
+        return self.cartitem_set.all().count()
 
     def _item_exists(self, product):
         return self.cartitem_set.filter(product = product).exists()

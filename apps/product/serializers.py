@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from rest_framework import serializers
+from rest_framework.reverse import reverse
 from .models import *
 
 
@@ -45,16 +46,6 @@ class GaleryProductSerializer(serializers.ModelSerializer):
         read_only_fields = ('id', 'product', 'thumbnail')
 
 
-# class PublicGaleryProductSerializer(serializers.Serializer):
-#     detail = serializers.HyperlinkedIdentityField(
-#             view_name = 'product-detail',
-#             lookup_field = 'pk',
-#             context = {'request': request},
-#             read_only=True
-#     )
-#     image = serializers.CharField(read_only=True)
-
-
 class ColorVariationSerializer(serializers.ModelSerializer):
     class Meta:
         model = ColorVariation
@@ -69,13 +60,45 @@ class SizeVariationSerializer(serializers.ModelSerializer):
         read_only_fields = ('id',)
 
 
+
 class ProductSerializer(serializers.ModelSerializer):
+    thumbnail = serializers.SerializerMethodField()
+    detail = serializers.HyperlinkedIdentityField(
+        view_name = 'product:detail',
+        lookup_field = 'id'
+    )
+    
+    class Meta:
+        model = Product
+        fields = [
+            'id',
+            'detail',
+            'name',
+            'description',
+            'price',
+            'category',
+            'quantity',
+            'sold',
+            'date_created',
+            'thumbnail'
+        ]
+        
+    def get_thumbnail(self, obj):
+        gallery = GaleryProduct.objects.filter(product_id = obj.id)
+        if len(gallery) > 0:
+            thumbnail = self.context.get('request').build_absolute_uri(gallery[0].image.url)
+            return thumbnail
+        return ''
+
+
+class ProductDetailSerializer(ProductSerializer):
     gallery = serializers.SerializerMethodField(read_only = True)
     thumbnail = serializers.SerializerMethodField()
     taxes = serializers.SerializerMethodField(read_only = True)
     discount = serializers.SerializerMethodField(read_only = True)
     colors = serializers.SerializerMethodField(read_only = True)
     sizes = serializers.SerializerMethodField(read_only = True)
+    # detail_url = serializers.SerializerMethodField(read_only = True)
     # galerias = serializers.PrimaryKeyRelatedField(
 	# 	many=True,
 	# 	queryset=GaleryProduct.objects.all()
@@ -84,12 +107,8 @@ class ProductSerializer(serializers.ModelSerializer):
 	# 	many=True,
 	# 	queryset=Tag.objects.all()
 	# )
-    # detail = serializers.HyperlinkedIdentityField(
-    #     view_name = 'detail',
-    #     lookup_field = 'id'
-    # )
-    
-    class Meta:
+
+    class Meta(ProductSerializer.Meta):
         model = Product
         fields = [
             'id',
@@ -109,6 +128,10 @@ class ProductSerializer(serializers.ModelSerializer):
         ]
         # read_only_fields = ('id',)
 
+    # def get_detail_url(self, obj):
+    #     request = self.context.get('request')
+    #     return reverse("product:detail", kwargs={"id": obj.id})
+
     def get_colors(self, obj):
         serializer = ColorVariationSerializer(obj.get_colors(), many = True)
         return serializer.data
@@ -120,13 +143,6 @@ class ProductSerializer(serializers.ModelSerializer):
     def get_gallery(self, obj):
         serializer = GaleryProductSerializer(obj.get_gallery(), many = True)
         return serializer.data
-    
-    def get_thumbnail(self, obj):
-        gallery = GaleryProduct.objects.filter(product_id = obj.id)
-        if len(gallery) > 0:
-            thumbnail = f"http://127.0.0.1:8000/media/{gallery[0].image}"
-            return thumbnail
-        return ''
 
     def get_taxes(self, obj):
         serializer = TaxSerializer(obj.get_taxes(), many = True)

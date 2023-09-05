@@ -1,6 +1,6 @@
 from django.db import IntegrityError
 from django.shortcuts import get_list_or_404, get_object_or_404
-from rest_framework import generics
+from rest_framework import generics, permissions
 from rest_framework.views import APIView
 
 from apps.product.models import Product
@@ -13,28 +13,42 @@ from .models import Cart, CartItem
 
 class GetItemsView(generics.ListAPIView):
     serializer_class = CartSerializer
-    
     def get_queryset(self):
         return self.serializer_class.Meta.model.objects.filter(user = self.request.user)
+        # return self.serializer_class.Meta.model.objects.all()
+
+
+class CartListCreate(generics.ListCreateAPIView):
+    serializer_class = CartSerializer
+    queryset = Cart.objects.all()
+    permission_classes = [permissions.AllowAny]
+
+
+class CartUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Cart.objects.all()
+    serializer_class = CartSerializer
+    permission_classes = [permissions.AllowAny]
+    lookup_field = "id"
 
 
 class CartItemListCreate(generics.ListCreateAPIView):
     serializer_class = CartItemSerializer
+    queryset = CartItem.objects.all()
+    permission_classes = [permissions.AllowAny]
 
-    def get_queryset(self):
-        queryset = self.serializer_class.Meta.model.objects.filter(user = self.request.user)
-        return queryset
+    # def get_queryset(self):
+    #     queryset = self.serializer_class.Meta.model.objects.filter(user = self.request.user)
+    #     return queryset
 
-    def perform_create(self, serializer):
-        print(self.kwargs)
-        pass
+    # def perform_create(self, serializer):
+    #     print(self.kwargs)
+    #     pass
 
 
-class CartItemveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+class CartItemManagementView(generics.RetrieveUpdateDestroyAPIView):
     queryset = CartItem.objects.all()
     serializer_class = CartItemSerializer
     lookup_field = "id"
-
 
 
 class AddItemView(APIView):
@@ -53,12 +67,11 @@ class AddItemView(APIView):
 
             if cart._item_exists(product):
                 return conflict_response({'error':'the product already in cart'})
-
+            
             if int(product.quantity) > 0:
                 CartItem.objects.create(product = product, cart = cart, count = count)
 
                 if cart._item_exists(product):
-                    Cart.objects.filter(user = user).update(total_items =+ 1)
                     cart_items = CartItem.objects.order_by('product').filter(cart = cart)
                     serializer = CartItemSerializer(cart_items, many = True)
                     return created_response(serializer.data)
@@ -88,7 +101,7 @@ class GetItemTotalView(APIView):
 
     def get(self, request):
         cart =  get_object_or_404(Cart, user = request.user )
-        return success_response({'total_items': cart.total_items})
+        return success_response({'total_items': cart.get_total_items()})
 
 
 class UpdateItemView(APIView):
@@ -132,14 +145,12 @@ class RemoveItemView(APIView):
         try:
             cart = get_object_or_404(Cart, user=user)
             product = get_object_or_404(Product, id=product_id)
- 
+
             if not cart._item_exists(product):
                 return not_found({'error': 'El producto no está en tu carrito'})
-
-            CartItem.objects.filter(cart=cart, product=product).delete()
-
-            if not cart._item_exists(product):
-                Cart.objects.filter(user=user).update( total_items =- 1 )
+            else:
+                cart.delete_cart_item(product)
+                cart.save()
 
             cart_items = CartItem.objects.order_by('product').filter(cart=cart)
             serializer = CartItemSerializer(cart_items, many=True)
@@ -153,8 +164,7 @@ class EmptyCartView(APIView):
     def delete(self, request, format=None):
         try:
             cart = get_object_or_404( Cart, user = request.user )
-            CartItem.objects.filter( cart = cart ).delete()
-            cart.total_items = 0 
+            cart.clear_cart_items()
             cart.save()
             return success_response({'success':'cart empty successfully'})
         except Exception as error:
@@ -200,8 +210,6 @@ class SynchCartView(APIView):
                     
                     if cart_item_count <= quantity:
                         CartItem.objects.create(cart = cart, product = product, count = cart_item_count)
-                        if CartItem.objects.filter(cart = cart, product = product).exists():
-                            Cart.objects.filter(cart = cart, product = product).update(total_items = int(cart_item['count']) + 1)
                 
                 return created_response({'success': 'cart Synchronized'})
         except Exception as error:
@@ -219,10 +227,8 @@ class SynchCartView(APIView):
 
 #     def get(self, request, *args, **kwargs):
 #         id = self.kwargs.get('id')
-
 #         if id is not None:
 #             return self.retrieve(request, *args, **kwargs)
-
 #         return self.list(request, *args, **kwargs)
 
 #     def post(self, request, *args, **kwargs):
