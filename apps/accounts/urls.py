@@ -10,7 +10,9 @@ from .views import *
 app_name='accounts'
 
 urlpatterns = [
-	path('wishlist', WishListItemCreateView.as_view()),
+	path('wishlist', WishListView.as_view()),
+	path('wishlist/<int:id>', WishListManagementView.as_view()),
+	path('wishlist_item', WishListItemCreateView.as_view()),
 	re_path(r'^wishlist/delete/(?P<id>[^/]+)/$', WishListItemDestroyView.as_view()),
 	re_path(r'reviews$', ReviewListCreateView.as_view()),
     re_path(r'^reviews/updateOrDelete/(?P<id>[^/]+)/$', ReviewRetrieveUpdateDestroyView.as_view()),
