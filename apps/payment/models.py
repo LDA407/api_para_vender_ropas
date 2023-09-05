@@ -58,7 +58,7 @@ class OrderItem(models.Model):
 class OrderItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderItem
-        fields = ['id', 'product', 'name', 'price', 'count', 'data_added']
+        fields = ['id', 'product', 'name', 'price', 'count']
 
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -66,16 +66,8 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = [
-            'id', 'status', 'user', 'transaction_id', 'amount', 'full_name',
-            'address_line_1', 'address_line_2', 'city', 'province', 'zip_code',
-            'country', 'telephone', 'shipping_name', 'shipping_time', 'shipping_price',
-            'date_issued', 'reference_number', 'items'
-        ]
-        read_only_fields = [
-            'id', 'user', 'transaction_id',
-            'amount', 'date_issued', 'reference_number'
-        ]
+        fields = '__all__'
+        read_only_fields = ['id', 'user', 'transaction_id', 'amount', 'reference_number']
 
 
 class FixedPriceCoupon(models.Model):
