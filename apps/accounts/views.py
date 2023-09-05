@@ -9,33 +9,29 @@ from apps.shopping_cart.models import Cart, CartItem
 from utils.responses import *
 
 from .models import Review, WishList, WishListItem
-# from .models import UserProfile
 from .serializers import *
 
-# class GetUserProfileView(APIView):
-#     def get(self, request, format=None):
-#         try:
-#             user_profile = get_object_or_404(UserProfile, user = self.request.user)
-#             user_profile = UserProfileSerializer(user_profile)
-#             return success_response({'profile': user_profile.data})
-#         except Exception as e:
-#             return server_error({'error': f'{e}'})
+
+# class UserProfileView(generics.ListCreateAPIView):
+#     serializer_class = UserProfileSerializer
+#     queryset = serializer_class.Meta.model.objects.all()
 
 
-# class UdateUserProfile(APIView):
-#     def put(self, request, format=None):
-#         try:
-#             user = self.request.user
-#             data = self.request.data
+# class UserProfileManagementView(generics.RetrieveUpdateDestroyAPIView):
+#     queryset = UserProfile.objects.all()
+#     serializer_class = UserProfileSerializer
+#     lookup_field = "id"
 
-#             UserProfile.objects.filter(user=user).update(**data)
 
-#             user_profile = UserProfile.objects.filter(user=user)
-#             user_profile = UserProfileSerializer(user_profile)
+class WishListView(generics.ListCreateAPIView):
+    serializer_class = WishListSerializer
+    queryset = serializer_class.Meta.model.objects.all()
 
-#             return success_response({'profile': user_profile.data})
-#         except Exception as e:
-#             return server_error({'error': f'{e}'})
+
+class WishListManagementView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = WishList.objects.all()
+    serializer_class = WishListSerializer
+    lookup_field = "id"
 
 
 class WishListItemCreateView(generics.ListCreateAPIView):
@@ -51,6 +47,12 @@ class WishListItemCreateView(generics.ListCreateAPIView):
     #     print(serializer.validated_data)
         # product = get_object_or_404(Product, id = product_id)
         # serializer.save(user = self.request.user, product = self.request.data["product"])
+
+
+class WishListItemDestroyView(generics.DestroyAPIView):
+    queryset = WishListItem.objects.all()
+    serializer_class = WishListItemSerializer
+    lookup_field = "id"
 
 
 # class AddItemView(APIView):
