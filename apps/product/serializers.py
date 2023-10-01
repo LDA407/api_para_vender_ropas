@@ -60,7 +60,6 @@ class SizeVariationSerializer(serializers.ModelSerializer):
         read_only_fields = ('id',)
 
 
-
 class ProductSerializer(serializers.ModelSerializer):
     thumbnail = serializers.SerializerMethodField()
     detail = serializers.HyperlinkedIdentityField(
@@ -93,21 +92,11 @@ class ProductSerializer(serializers.ModelSerializer):
 
 class ProductDetailSerializer(ProductSerializer):
     gallery = serializers.SerializerMethodField(read_only = True)
-    thumbnail = serializers.SerializerMethodField()
     taxes = serializers.SerializerMethodField(read_only = True)
     discount = serializers.SerializerMethodField(read_only = True)
     colors = serializers.SerializerMethodField(read_only = True)
     sizes = serializers.SerializerMethodField(read_only = True)
-    # detail_url = serializers.SerializerMethodField(read_only = True)
-    # galerias = serializers.PrimaryKeyRelatedField(
-	# 	many=True,
-	# 	queryset=GaleryProduct.objects.all()
-	# )
-	# Tag = serializers.PrimaryKeyRelatedField(
-	# 	many=True,
-	# 	queryset=Tag.objects.all()
-	# )
-
+    
     class Meta(ProductSerializer.Meta):
         model = Product
         fields = [
@@ -126,11 +115,6 @@ class ProductDetailSerializer(ProductSerializer):
             'discount',
             'gallery'
         ]
-        # read_only_fields = ('id',)
-
-    # def get_detail_url(self, obj):
-    #     request = self.context.get('request')
-    #     return reverse("product:detail", kwargs={"id": obj.id})
 
     def get_colors(self, obj):
         serializer = ColorVariationSerializer(obj.get_colors(), many = True)
